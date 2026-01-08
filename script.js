@@ -9,11 +9,43 @@ let gameOver = false;
 const narrator = document.getElementById("narrator");
 const angerText = document.getElementById("anger");
 
+// DİYALOG HAVUZLARI
+const dialog = {
+    correct: [
+        "Evet. Nihayet dinliyorsun.",
+        "Bak… böyle yapman gerekiyordu.",
+        "Şaşırtıcı şekilde doğru.",
+        "Düşünerek bastın. Hissediyorum."
+    ],
+    wrong: [
+        "Hayır. Bu söylediğim değildi.",
+        "Cidden mi? Bu kadar mı zor?",
+        "Yanlış. Açıkça yanlış.",
+        "Beni test etmeye mi çalışıyorsun?"
+    ],
+    idle: [
+        "Hiçbir şey… ilginç bir seçim.",
+        "Sessizlik mi? Ciddi olamazsın.",
+        "Beni görmezden geliyorsun.",
+        "Bu da bir cevap sayılır… sanırım."
+    ],
+    next: [
+        "Şimdi dikkat et.",
+        "Tekrar deniyoruz.",
+        "Bu sefer kaçırma.",
+        "Hazır mısın?"
+    ]
+};
+
+function rand(arr) {
+    return arr[Math.floor(Math.random() * arr.length)];
+}
+
 // SESİ BAŞLAT
 function enableAudio() {
     const u = new SpeechSynthesisUtterance("Ses aktif.");
     u.lang = "tr-TR";
-    u.rate = 0.9;
+    u.rate = 0.85;
     u.pitch = 0.8;
     speechSynthesis.speak(u);
     audioEnabled = true;
@@ -23,60 +55,48 @@ function enableAudio() {
 // KONUŞ
 function speak(text) {
     if (!audioEnabled || gameOver) return;
-
+    speechSynthesis.cancel();
     const u = new SpeechSynthesisUtterance(text);
     u.lang = "tr-TR";
-    u.rate = 0.9;
+    u.rate = 0.85;
     u.pitch = 0.8;
     speechSynthesis.speak(u);
 }
 
 // JUMPSCARE
 function triggerJumpscare() {
-    const js = document.getElementById("jumpscare");
+    document.getElementById("jumpscare").style.display = "flex";
     const scream = document.getElementById("scream");
-
-    js.style.display = "flex";
     scream.volume = 1;
     scream.play();
-
-    setTimeout(() => {
-        js.style.display = "none";
-    }, 1200);
 }
 
 // OYUN SONU
 function endGame(title, text, scare = false) {
     gameOver = true;
-
     if (scare) triggerJumpscare();
-
     narrator.innerText = title + "\n\n" + text;
     speak(text);
     angerText.innerText = "OYUN BİTTİ";
-
-    document.querySelectorAll(".buttons button").forEach(b => b.disabled = true);
 }
 
 // SON KONTROL
 function checkEnding() {
-
-    // GİZLİ SON
-    if (moveCount >= 10 && mixedPlay && !gameOver) {
+    if (moveCount >= 10 && mixedPlay) {
         endGame(
             "GİZLİ SON",
-            "Dur.\n\nSen rastgele oynamıyorsun.\nBeni çözmeye çalışıyorsun.\n\nBu bir oyun değil.",
+            "Dur.\n\nBeni çözmeye çalışıyorsun.\nBu bir oyun değil.",
             true
         );
         return;
     }
 
     if (anger >= 15) {
-        endGame("ANLATICI ÇILDIRDI", "Yeter! Oyun bitti.");
+        endGame("ANLATICI ÇILDIRDI", "Yeter! Artık bitti.");
     } else if (idleCount >= 5) {
         endGame("SESSİZ SON", "...\n(Sessizlik)");
-    } else if (anger <= 4 && moveCount >= 10) {
-        endGame("SAYGI SONU", "Sanırım beni anlayabiliyorsun.");
+    } else if (anger <= 3 && moveCount >= 10) {
+        endGame("SAYGI SONU", "Beni dinlemeyi öğrendin.");
     }
 }
 
@@ -85,23 +105,20 @@ function choose(choice) {
     if (gameOver) return;
 
     moveCount++;
-
     let response = "";
 
     if (choice === "none") {
         idleCount++;
         anger += 2;
         mixedPlay = false;
-        response = "Hiçbir şey yapmamayı seçtin.";
+        response = rand(dialog.idle);
     } else if (choice === correctChoice) {
-        anger += 1;
-        response = "Evet. Söylediğimi yaptın.";
+        anger = Math.max(0, anger - 1);
+        response = rand(dialog.correct);
     } else {
         anger += 3;
-        response = "Hayır. Açıkça yanlış yaptın.";
+        response = rand(dialog.wrong);
     }
-
-    if (anger === 0 || anger > 10) mixedPlay = false;
 
     narrator.innerText = response;
     angerText.innerText = "Anlatıcı Siniri: " + anger;
@@ -113,8 +130,9 @@ function choose(choice) {
     correctChoice = Math.random() > 0.5 ? "left" : "right";
 
     setTimeout(() => {
-        const next = "Şimdi " + (correctChoice === "left" ? "SOLA" : "SAĞA") + " bas.";
-        narrator.innerText = next;
-        speak(next);
-    }, 1600);
+        const nextText = rand(dialog.next) +
+            " Şimdi " + (correctChoice === "left" ? "SOLA" : "SAĞA") + " bas.";
+        narrator.innerText = nextText;
+        speak(nextText);
+    }, 1700);
 }
