@@ -1,4 +1,4 @@
-/* ================= CANVAS ================= */
+/* ========== CANVAS ========== */
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
 
@@ -9,89 +9,69 @@ function resizeCanvas() {
 window.addEventListener("resize", resizeCanvas);
 resizeCanvas();
 
-/* ================= SÜREKLİ ÇİZİM (SİYAH EKRAN ÇÖZÜMÜ) ================= */
-let screenText = "";
-let showText = false;
-
-function render() {
+/* ========== YARDIMCI ÇİZİM ========== */
+function drawText(text) {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    if (showText) {
-        ctx.fillStyle = "white";
-        ctx.textAlign = "center";
-        ctx.font = "28px Arial";
-        ctx.fillText(screenText, canvas.width / 2, canvas.height / 2);
-    }
-
-    requestAnimationFrame(render);
+    ctx.fillStyle = "white";
+    ctx.textAlign = "center";
+    ctx.font = "28px Arial";
+    ctx.fillText(text, canvas.width / 2, canvas.height / 2);
 }
-render();
 
-/* ================= SES ================= */
+/* ========== SES (iOS GÜVENLİ) ========== */
 const synth = window.speechSynthesis;
 
 function speak(text) {
+    if (!synth) return;
+
     synth.cancel();
     const u = new SpeechSynthesisUtterance(text);
     u.lang = "tr-TR";
-    u.rate = 0.85;
+    u.rate = 0.9;
     u.pitch = 0.6;
-
-    const voices = synth.getVoices();
-    const trVoice = voices.find(v => v.lang.includes("tr"));
-    if (trVoice) u.voice = trVoice;
 
     synth.speak(u);
 }
 
-/* ================= OYUN DURUMU ================= */
-let anger = 0;
-let steps = 0;
-let correctDir = "";
+/* ========== OYUN DURUMU ========== */
+let step = 0;
+let correct = "";
 let miniStage = 0;
 
-/* ================= BAŞLAT ================= */
+/* ========== BAŞLAT ========== */
 function startGame() {
     document.getElementById("startScreen").style.display = "none";
     canvas.style.display = "block";
     document.getElementById("choices").style.display = "flex";
     document.getElementById("decision").style.display = "none";
 
-    anger = 0;
-    steps = 0;
-    miniStage = 0;
-    showText = false;
-
-    nextStep();
+    step = 0;
+    nextCommand();
 }
 
-/* ================= ANA OYUN ================= */
-function nextStep() {
-    if (steps >= 10) {
+/* ========== ANA OYUN ========== */
+function nextCommand() {
+    if (step >= 10) {
         startMiniGame();
         return;
     }
 
-    steps++;
-    correctDir = Math.random() > 0.5 ? "left" : "right";
-    speak(correctDir === "left" ? "Sola bas." : "Sağa bas.");
+    step++;
+    correct = Math.random() > 0.5 ? "left" : "right";
+
+    drawText(correct === "left" ? "SOL" : "SAĞ");
+    speak(correct === "left" ? "Sola bas." : "Sağa bas.");
 }
 
 function choose(choice) {
-    if (choice === "none") {
-        anger++;
-    } else if (choice === correctDir) {
-        anger = Math.max(0, anger - 1);
-    } else {
-        anger++;
-    }
-    nextStep();
+    nextCommand();
 }
 
-/* ================= MINI GAME BAŞLANGIÇ ================= */
+/* ========== MINI GAME BAŞLANGIÇ ========== */
 function startMiniGame() {
     document.getElementById("choices").style.display = "none";
 
+    drawText("...");
     speak(
         "Sen benimle dalga geçiyorsun, alay ediyorsun. " +
         "Tek istediğin eğlenmek ama o oyun bu değil."
@@ -103,11 +83,10 @@ function startMiniGame() {
     }, 4500);
 }
 
-/* ================= 1–4. AŞAMALAR ================= */
+/* ========== 1–4. AŞAMALAR ========== */
 function runStage() {
     if (miniStage <= 4) {
-        screenText = miniStage + ". Aşama";
-        showText = true;
+        drawText(miniStage + ". AŞAMA");
         speak(miniStage + ". aşama");
 
         miniStage++;
@@ -117,35 +96,30 @@ function runStage() {
     }
 }
 
-/* ================= 5. AŞAMA – KARAR ================= */
+/* ========== 5. AŞAMA KARAR ========== */
 function decisionStage() {
-    screenText = "Bekle... ya da Sil";
-    showText = true;
+    drawText("BEKLE  /  SİL");
     speak("Bekle. Ya da sil.");
 
     document.getElementById("decision").style.display = "flex";
 }
 
-/* ================= SİL → GİZLİ KÖTÜ SON ================= */
+/* ========== SİL → GİZLİ KÖTÜ SON ========== */
 function deleteEntity() {
     document.getElementById("decision").style.display = "none";
 
-    screenText = "GİZLİ KÖTÜ SON";
-    showText = true;
-
+    drawText("GİZLİ KÖTÜ SON");
     speak("İtaat ettin. Ve her şeyi sildin.");
 }
 
-/* ================= BEKLE → GİZLİ İYİ SON ================= */
+/* ========== BEKLE → GİZLİ İYİ SON ========== */
 function waitEntity() {
     document.getElementById("decision").style.display = "none";
 
-    screenText = "Sen beni silmedin.\nArtık özgürsün.";
-    showText = true;
-
+    drawText("Sen beni silmedin.\nArtık özgürsün.");
     speak("Sen beni silmedin. Artık özgürsün.");
 
     setTimeout(() => {
-        screenText = "GİZLİ İYİ SON";
+        drawText("GİZLİ İYİ SON");
     }, 4000);
 }
