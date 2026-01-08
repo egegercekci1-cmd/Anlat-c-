@@ -1,15 +1,14 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-<meta charset="UTF-8">
-<title>Anlatıcı Sana Kızıyor</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <title>Anlatıcı Sana Kızıyor</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
 <div id="startScreen">
-    <h1>Anlatıcı Sana Kızıyor</h1>
     <button onclick="startGame()">Sesi Başlat</button>
 </div>
 
@@ -18,12 +17,11 @@
 <div id="choices">
     <button onclick="choose('left')">SOL</button>
     <button onclick="choose('right')">SAĞ</button>
-    <button onclick="choose('none')">HİÇBİR ŞEY</button>
 </div>
 
 <div id="decision">
-    <button onclick="deleteEntity()">SİL</button>
     <button onclick="waitEntity()">BEKLE</button>
+    <button onclick="deleteEntity()">SİL</button>
 </div>
 
 <script src="script.js"></script>
