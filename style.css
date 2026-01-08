@@ -1,8 +1,8 @@
 body {
     margin: 0;
-    font-family: Arial, sans-serif;
-    background-color: #0f0f0f;
+    background: #0f0f0f;
     color: white;
+    font-family: Arial, sans-serif;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -12,31 +12,48 @@ body {
 #game {
     text-align: center;
     max-width: 420px;
-    padding: 20px;
-}
-
-h1 {
-    margin-bottom: 20px;
 }
 
 button {
-    background-color: #222;
+    background: #222;
     color: white;
     border: none;
-    padding: 15px 22px;
-    margin: 10px;
+    padding: 14px 20px;
+    margin: 8px;
     font-size: 16px;
     cursor: pointer;
-    transition: 0.2s;
 }
 
 button:hover {
-    background-color: crimson;
-    transform: scale(1.05);
+    background: crimson;
 }
 
 #anger {
-    margin-top: 20px;
+    margin-top: 15px;
     color: crimson;
     font-weight: bold;
+}
+
+/* JUMPSCARE */
+#jumpscare {
+    position: fixed;
+    inset: 0;
+    background: black;
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+#jumpscare img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    animation: flash 0.12s infinite;
+}
+
+@keyframes flash {
+    0% { filter: brightness(1); }
+    50% { filter: brightness(2); }
+    100% { filter: brightness(1); }
 }
