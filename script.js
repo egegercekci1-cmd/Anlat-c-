@@ -1,3 +1,4 @@
+/* ================= CANVAS ================= */
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
 
@@ -8,7 +9,25 @@ function resizeCanvas() {
 window.addEventListener("resize", resizeCanvas);
 resizeCanvas();
 
-/* ---------- SES ---------- */
+/* ================= SÜREKLİ ÇİZİM (SİYAH EKRAN ÇÖZÜMÜ) ================= */
+let screenText = "";
+let showText = false;
+
+function render() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    if (showText) {
+        ctx.fillStyle = "white";
+        ctx.textAlign = "center";
+        ctx.font = "28px Arial";
+        ctx.fillText(screenText, canvas.width / 2, canvas.height / 2);
+    }
+
+    requestAnimationFrame(render);
+}
+render();
+
+/* ================= SES ================= */
 const synth = window.speechSynthesis;
 
 function speak(text) {
@@ -25,13 +44,13 @@ function speak(text) {
     synth.speak(u);
 }
 
-/* ---------- OYUN DURUMU ---------- */
+/* ================= OYUN DURUMU ================= */
 let anger = 0;
 let steps = 0;
 let correctDir = "";
 let miniStage = 0;
 
-/* ---------- BAŞLAT ---------- */
+/* ================= BAŞLAT ================= */
 function startGame() {
     document.getElementById("startScreen").style.display = "none";
     canvas.style.display = "block";
@@ -40,12 +59,13 @@ function startGame() {
 
     anger = 0;
     steps = 0;
+    miniStage = 0;
+    showText = false;
 
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
     nextStep();
 }
 
-/* ---------- ANA OYUN ---------- */
+/* ================= ANA OYUN ================= */
 function nextStep() {
     if (steps >= 10) {
         startMiniGame();
@@ -54,7 +74,6 @@ function nextStep() {
 
     steps++;
     correctDir = Math.random() > 0.5 ? "left" : "right";
-
     speak(correctDir === "left" ? "Sola bas." : "Sağa bas.");
 }
 
@@ -69,10 +88,14 @@ function choose(choice) {
     nextStep();
 }
 
-/* ---------- MINI GAME ---------- */
+/* ================= MINI GAME BAŞLANGIÇ ================= */
 function startMiniGame() {
     document.getElementById("choices").style.display = "none";
-    speak("Sen benimle dalga geçiyorsun, alay ediyorsun. Tek istediğin eğlenmek ama o oyun bu değil.");
+
+    speak(
+        "Sen benimle dalga geçiyorsun, alay ediyorsun. " +
+        "Tek istediğin eğlenmek ama o oyun bu değil."
+    );
 
     setTimeout(() => {
         miniStage = 1;
@@ -80,16 +103,12 @@ function startMiniGame() {
     }, 4500);
 }
 
+/* ================= 1–4. AŞAMALAR ================= */
 function runStage() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    ctx.fillStyle = "white";
-    ctx.textAlign = "center";
-    ctx.font = "26px Arial";
-
     if (miniStage <= 4) {
-        ctx.fillText(`${miniStage}. Aşama`, canvas.width / 2, canvas.height / 2);
-        speak(`${miniStage}. aşama`);
+        screenText = miniStage + ". Aşama";
+        showText = true;
+        speak(miniStage + ". aşama");
 
         miniStage++;
         setTimeout(runStage, 3000);
@@ -98,32 +117,35 @@ function runStage() {
     }
 }
 
-/* ---------- 5. AŞAMA KARAR ---------- */
+/* ================= 5. AŞAMA – KARAR ================= */
 function decisionStage() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    screenText = "Bekle... ya da Sil";
+    showText = true;
     speak("Bekle. Ya da sil.");
 
     document.getElementById("decision").style.display = "flex";
 }
 
+/* ================= SİL → GİZLİ KÖTÜ SON ================= */
 function deleteEntity() {
     document.getElementById("decision").style.display = "none";
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    screenText = "GİZLİ KÖTÜ SON";
+    showText = true;
 
     speak("İtaat ettin. Ve her şeyi sildin.");
-
-    ctx.font = "28px Arial";
-    ctx.fillText("GİZLİ KÖTÜ SON", canvas.width / 2, canvas.height / 2);
 }
 
+/* ================= BEKLE → GİZLİ İYİ SON ================= */
 function waitEntity() {
     document.getElementById("decision").style.display = "none";
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    screenText = "Sen beni silmedin.\nArtık özgürsün.";
+    showText = true;
 
     speak("Sen beni silmedin. Artık özgürsün.");
 
     setTimeout(() => {
-        ctx.font = "30px Arial";
-        ctx.fillText("GİZLİ İYİ SON", canvas.width / 2, canvas.height / 2);
+        screenText = "GİZLİ İYİ SON";
     }, 4000);
 }
