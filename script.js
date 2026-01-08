@@ -1,138 +1,99 @@
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+
+const synth = window.speechSynthesis;
 let anger = 0;
-let correctChoice = "right";
-let audioEnabled = false;
-let idleCount = 0;
-let moveCount = 0;
-let mixedPlay = true;
-let gameOver = false;
+let steps = 0;
+let gameStarted = false;
+let miniGameStage = 0;
+let alive = true;
 
-const narrator = document.getElementById("narrator");
-const angerText = document.getElementById("anger");
-
-// DİYALOG HAVUZLARI
-const dialog = {
-    correct: [
-        "Evet. Nihayet dinliyorsun.",
-        "Bak… böyle yapman gerekiyordu.",
-        "Şaşırtıcı şekilde doğru.",
-        "Düşünerek bastın. Hissediyorum."
-    ],
-    wrong: [
-        "Hayır. Bu söylediğim değildi.",
-        "Cidden mi? Bu kadar mı zor?",
-        "Yanlış. Açıkça yanlış.",
-        "Beni test etmeye mi çalışıyorsun?"
-    ],
-    idle: [
-        "Hiçbir şey… ilginç bir seçim.",
-        "Sessizlik mi? Ciddi olamazsın.",
-        "Beni görmezden geliyorsun.",
-        "Bu da bir cevap sayılır… sanırım."
-    ],
-    next: [
-        "Şimdi dikkat et.",
-        "Tekrar deniyoruz.",
-        "Bu sefer kaçırma.",
-        "Hazır mısın?"
-    ]
-};
-
-function rand(arr) {
-    return arr[Math.floor(Math.random() * arr.length)];
-}
-
-// SESİ BAŞLAT
-function enableAudio() {
-    const u = new SpeechSynthesisUtterance("Ses aktif.");
-    u.lang = "tr-TR";
-    u.rate = 0.85;
-    u.pitch = 0.8;
-    speechSynthesis.speak(u);
-    audioEnabled = true;
-    document.getElementById("startAudio").style.display = "none";
-}
-
-// KONUŞ
 function speak(text) {
-    if (!audioEnabled || gameOver) return;
-    speechSynthesis.cancel();
+    synth.cancel();
     const u = new SpeechSynthesisUtterance(text);
     u.lang = "tr-TR";
     u.rate = 0.85;
-    u.pitch = 0.8;
-    speechSynthesis.speak(u);
+    u.pitch = 0.6;
+    const voices = synth.getVoices();
+    const male = voices.find(v => v.lang.includes("tr"));
+    if (male) u.voice = male;
+    synth.speak(u);
 }
 
-// JUMPSCARE
-function triggerJumpscare() {
-    document.getElementById("jumpscare").style.display = "flex";
-    const scream = document.getElementById("scream");
-    scream.volume = 1;
-    scream.play();
+function startGame() {
+    document.getElementById("startScreen").style.display = "none";
+    canvas.style.display = "block";
+    document.getElementById("choices").style.display = "block";
+    gameStarted = true;
+    nextStep();
 }
 
-// OYUN SONU
-function endGame(title, text, scare = false) {
-    gameOver = true;
-    if (scare) triggerJumpscare();
-    narrator.innerText = title + "\n\n" + text;
-    speak(text);
-    angerText.innerText = "OYUN BİTTİ";
-}
-
-// SON KONTROL
-function checkEnding() {
-    if (moveCount >= 10 && mixedPlay) {
-        endGame(
-            "GİZLİ SON",
-            "Dur.\n\nBeni çözmeye çalışıyorsun.\nBu bir oyun değil.",
-            true
-        );
+function nextStep() {
+    if (steps >= 10) {
+        startMiniGame();
         return;
     }
-
-    if (anger >= 15) {
-        endGame("ANLATICI ÇILDIRDI", "Yeter! Artık bitti.");
-    } else if (idleCount >= 5) {
-        endGame("SESSİZ SON", "...\n(Sessizlik)");
-    } else if (anger <= 3 && moveCount >= 10) {
-        endGame("SAYGI SONU", "Beni dinlemeyi öğrendin.");
-    }
+    steps++;
+    const dir = Math.random() > 0.5 ? "left" : "right";
+    speak(dir === "left" ? "Sola bas." : "Sağa bas.");
 }
 
-// OYUN
 function choose(choice) {
-    if (gameOver) return;
+    if (!gameStarted) return;
 
-    moveCount++;
-    let response = "";
-
+    const correct = synth.speaking ? null : null;
     if (choice === "none") {
-        idleCount++;
-        anger += 2;
-        mixedPlay = false;
-        response = rand(dialog.idle);
-    } else if (choice === correctChoice) {
-        anger = Math.max(0, anger - 1);
-        response = rand(dialog.correct);
+        anger++;
     } else {
-        anger += 3;
-        response = rand(dialog.wrong);
+        anger += Math.random() > 0.5 ? -1 : 1;
     }
+    nextStep();
+}
 
-    narrator.innerText = response;
-    angerText.innerText = "Anlatıcı Siniri: " + anger;
-    speak(response);
+function startMiniGame() {
+    document.getElementById("choices").style.display = "none";
+    speak("Sen benimle dalga geçiyorsun, alay ediyorsun. Tek istediğin eğlenmek ama o oyun bu değil.");
+    setTimeout(() => {
+        miniGameStage = 1;
+        runStage();
+    }, 4000);
+}
 
-    checkEnding();
-    if (gameOver) return;
+function runStage() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    if (miniGameStage === 5) {
+        decisionStage();
+        return;
+    }
+    speak(miniGameStage + ". aşama.");
+    setTimeout(() => {
+        miniGameStage++;
+        runStage();
+    }, 3000);
+}
 
-    correctChoice = Math.random() > 0.5 ? "left" : "right";
+function decisionStage() {
+    speak("Bekle... ya da sil.");
+    document.getElementById("decision").style.display = "block";
+}
+
+function deleteEntity() {
+    document.getElementById("decision").style.display = "none";
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.font = "24px Arial";
+    ctx.textAlign = "center";
+    ctx.fillText("GİZLİ KÖTÜ SON", canvas.width / 2, canvas.height / 2);
+    speak("İtaat ettin. Ve her şeyi sildin.");
+}
+
+function waitEntity() {
+    document.getElementById("decision").style.display = "none";
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    speak("Sen beni silmedin. Artık özgürsün.");
 
     setTimeout(() => {
-        const nextText = rand(dialog.next) +
-            " Şimdi " + (correctChoice === "left" ? "SOLA" : "SAĞA") + " bas.";
-        narrator.innerText = nextText;
-        speak(nextText);
-    }, 1700);
+        ctx.font = "26px Arial";
+        ctx.textAlign = "center";
+        ctx.fillText("GİZLİ İYİ SON", canvas.width / 2, canvas.height / 2);
+    }, 4000);
 }
