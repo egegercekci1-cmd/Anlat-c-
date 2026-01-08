@@ -4,24 +4,40 @@ let correctChoice = "right";
 const narratorText = document.getElementById("narrator");
 const angerText = document.getElementById("anger");
 
+let voices = [];
+let speaking = false;
+
+// sesleri yükle
+speechSynthesis.onvoiceschanged = () => {
+    voices = speechSynthesis.getVoices();
+};
+
 // ---- SES FONKSİYONU ----
 function speak(text) {
-    speechSynthesis.cancel();
+    if (speaking) return; // cümle bitmeden yenisini başlatma
 
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = "tr-TR";
 
-    // sinire göre ses ayarı
-    if (anger < 5) {
-        utterance.rate = 1;
-        utterance.pitch = 1;
-    } else if (anger < 10) {
-        utterance.rate = 1.1;
-        utterance.pitch = 0.9;
-    } else {
-        utterance.rate = 1.2;
-        utterance.pitch = 0.7;
-    }
+    // erkek ses seç
+    const maleVoice = voices.find(v =>
+        v.lang === "tr-TR" &&
+        (v.name.toLowerCase().includes("male") ||
+         v.name.toLowerCase().includes("erkek") ||
+         v.name.toLowerCase().includes("google"))
+    );
+
+    if (maleVoice) utterance.voice = maleVoice;
+
+    // sakin konuşma
+    utterance.rate = 0.9;   // hız
+    utterance.pitch = 0.8;  // erkek tonu
+
+    speaking = true;
+
+    utterance.onend = () => {
+        speaking = false;
+    };
 
     speechSynthesis.speak(utterance);
 }
@@ -29,25 +45,25 @@ function speak(text) {
 // ---- TEPKİLER ----
 function goodResponse() {
     return random([
-        "Tabii ki dediğimi yaptın. Ne kadar şaşırtıcı.",
-        "Evet evet, aferin. Şimdi mutlu musun?",
-        "Beni dinlediğin için teşekkür etmemi mi bekliyorsun?"
+        "Evet. Söylediğimi yaptın. Beklendiği gibi.",
+        "Aferin. En azından bir kere doğru yaptın.",
+        "Bak, böyle olunca her şey daha kolay."
     ]);
 }
 
 function badResponse() {
     return random([
-        "Cidden mi? Söylediğimin tersini yaptın.",
-        "Beni özellikle sinirlendirmek için mi uğraşıyorsun?",
-        "Hayır. HAYIR. Bu hiç doğru değil."
+        "Hayır. Açıkça söylediğimin tersini yaptın.",
+        "Gerçekten mi? Bu kadar basitti.",
+        "Beni bilerek mi sinirlendiriyorsun?"
     ]);
 }
 
 function waitResponse() {
     return random([
-        "Hiçbir şey yapmamak mı? Cesur bir tercih.",
-        "Beni görmezden geliyorsun, farkındayım.",
-        "Tamam… bekleyelim bakalım."
+        "Hiçbir şey yapmamayı seçtin. İlginç.",
+        "Sessizlik mi? Peki, bekleyelim.",
+        "Sanırım beni test ediyorsun."
     ]);
 }
 
@@ -57,6 +73,8 @@ function random(arr) {
 
 // ---- OYUN AKIŞI ----
 function choose(choice) {
+    if (speaking) return; // konuşurken tıklanamasın
+
     let response = "";
 
     if (choice === correctChoice) {
@@ -74,15 +92,16 @@ function choose(choice) {
     angerText.textContent = "Anlatıcı Siniri: " + anger;
     speak(response);
 
-    // yeni talimat
     correctChoice = Math.random() > 0.5 ? "left" : "right";
 
     setTimeout(() => {
-        let next = "Şimdi " + (correctChoice === "left" ? "SOLA" : "SAĞA") + " bas.";
+        const next = "Şimdi " + (correctChoice === "left" ? "SOLA" : "SAĞA") + " bas.";
         narratorText.textContent = next;
         speak(next);
-    }, 1200);
+    }, 1800); // cümle bitsin diye süre uzatıldı
 }
 
-// ilk ses
-speak(narratorText.textContent);
+// ilk konuşma
+setTimeout(() => {
+    speak(narratorText.textContent);
+}, 500);
