@@ -1,35 +1,30 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-    <meta charset="UTF-8">
-    <title>Anlatıcı Sana Kızıyor</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<title>Anlatıcı Sana Kızıyor</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<div id="game">
-    <button id="startAudio" onclick="enableAudio()">🔊 Sesi Başlat</button>
-
+<div id="startScreen">
     <h1>Anlatıcı Sana Kızıyor</h1>
-
-    <p id="narrator">Hazırsan başlayalım. Şimdi SAĞA bas.</p>
-
-    <div class="buttons">
-        <button onclick="choose('left')">SOL</button>
-        <button onclick="choose('right')">SAĞ</button>
-        <button onclick="choose('none')">HİÇBİR ŞEY</button>
-    </div>
-
-    <p id="anger">Anlatıcı Siniri: 0</p>
+    <button onclick="startGame()">Sesi Başlat</button>
 </div>
 
-<!-- JUMPSCARE -->
-<div id="jumpscare">
-    <img src="https://i.imgur.com/8Km9tLL.png">
+<canvas id="game" width="360" height="640"></canvas>
+
+<div id="choices">
+    <button onclick="choose('left')">SOL</button>
+    <button onclick="choose('right')">SAĞ</button>
+    <button onclick="choose('none')">HİÇBİR ŞEY</button>
 </div>
 
-<audio id="scream" src="https://assets.mixkit.co/sfx/preview/mixkit-horror-scream-2837.mp3"></audio>
+<div id="decision">
+    <button onclick="deleteEntity()">SİL</button>
+    <button onclick="waitEntity()">BEKLE</button>
+</div>
 
 <script src="script.js"></script>
 </body>
