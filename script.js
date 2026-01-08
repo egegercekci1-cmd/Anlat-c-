@@ -4,40 +4,34 @@ let correctChoice = "right";
 const narratorText = document.getElementById("narrator");
 const angerText = document.getElementById("anger");
 
-let voices = [];
-let speaking = false;
+let voicesLoaded = false;
 
 // sesleri yükle
 speechSynthesis.onvoiceschanged = () => {
-    voices = speechSynthesis.getVoices();
+    voicesLoaded = true;
 };
 
 // ---- SES FONKSİYONU ----
 function speak(text) {
-    if (speaking) return; // cümle bitmeden yenisini başlatma
+    if (!voicesLoaded) return;
 
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = "tr-TR";
 
+    const voices = speechSynthesis.getVoices();
+
     // erkek ses seç
     const maleVoice = voices.find(v =>
         v.lang === "tr-TR" &&
-        (v.name.toLowerCase().includes("male") ||
+        (v.name.toLowerCase().includes("google") ||
          v.name.toLowerCase().includes("erkek") ||
-         v.name.toLowerCase().includes("google"))
+         v.name.toLowerCase().includes("male"))
     );
 
     if (maleVoice) utterance.voice = maleVoice;
 
-    // sakin konuşma
-    utterance.rate = 0.9;   // hız
+    utterance.rate = 0.9;   // yavaş
     utterance.pitch = 0.8;  // erkek tonu
-
-    speaking = true;
-
-    utterance.onend = () => {
-        speaking = false;
-    };
 
     speechSynthesis.speak(utterance);
 }
@@ -73,8 +67,6 @@ function random(arr) {
 
 // ---- OYUN AKIŞI ----
 function choose(choice) {
-    if (speaking) return; // konuşurken tıklanamasın
-
     let response = "";
 
     if (choice === correctChoice) {
@@ -98,10 +90,5 @@ function choose(choice) {
         const next = "Şimdi " + (correctChoice === "left" ? "SOLA" : "SAĞA") + " bas.";
         narratorText.textContent = next;
         speak(next);
-    }, 1800); // cümle bitsin diye süre uzatıldı
+    }, 1800);
 }
-
-// ilk konuşma
-setTimeout(() => {
-    speak(narratorText.textContent);
-}, 500);
