@@ -8,9 +8,11 @@
 <body>
 
 <div id="game">
+    <button id="startAudio" onclick="enableAudio()">🔊 Sesi Başlat</button>
+
     <h1>Anlatıcı Sana Kızıyor</h1>
 
-    <p id="narrator">Hazırsan başlıyoruz. Şimdi SAĞA bas.</p>
+    <p id="narrator">Hazırsan başlayalım. Şimdi SAĞA bas.</p>
 
     <div class="buttons">
         <button onclick="choose('left')">SOL</button>
@@ -20,6 +22,13 @@
 
     <p id="anger">Anlatıcı Siniri: 0</p>
 </div>
+
+<!-- JUMPSCARE -->
+<div id="jumpscare">
+    <img src="https://i.imgur.com/8Km9tLL.png">
+</div>
+
+<audio id="scream" src="https://assets.mixkit.co/sfx/preview/mixkit-horror-scream-2837.mp3"></audio>
 
 <script src="script.js"></script>
 </body>
