@@ -1,36 +1,28 @@
-html, body {
-    margin: 0;
-    padding: 0;
-    background: black;
-    color: white;
-    font-family: Arial, sans-serif;
-    overflow: hidden;
+body {
+  background: #111;
+  color: #eee;
+  font-family: Arial, sans-serif;
 }
 
-canvas {
-    display: none;
-}
-
-#startScreen {
-    position: fixed;
-    inset: 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+#game {
+  max-width: 600px;
+  margin: 50px auto;
+  background: #1c1c1c;
+  padding: 20px;
+  border-radius: 10px;
 }
 
 button {
-    font-size: 20px;
-    padding: 15px 30px;
-    background: black;
-    color: white;
-    border: 2px solid white;
+  display: block;
+  margin: 10px 0;
+  padding: 10px;
+  width: 100%;
+  background: #333;
+  color: white;
+  border: none;
+  cursor: pointer;
 }
 
-#choices, #decision {
-    position: fixed;
-    bottom: 30px;
-    width: 100%;
-    display: none;
-    justify-content: space-around;
+button:hover {
+  background: #555;
 }
