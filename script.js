@@ -1,180 +1,178 @@
-const canvas = document.getElementById("game");
-const ctx = canvas.getContext("2d");
-
-canvas.width = innerWidth;
-canvas.height = innerHeight;
-
-const synth = speechSynthesis;
-function speak(t){
-    synth.cancel();
-    const u = new SpeechSynthesisUtterance(t);
-    u.lang="tr-TR";
-    u.rate=0.9;
-    u.pitch=0.6;
-    synth.speak(u);
+// ================== KAYIT / YÜKLEME ==================
+function saveGame(sceneName) {
+  const data = {
+    player,
+    npc,
+    scene: sceneName
+  };
+  localStorage.setItem("hatirlayanDunyaSave", JSON.stringify(data));
 }
 
-function draw(text){
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-    ctx.fillStyle="white";
-    ctx.textAlign="center";
-    ctx.font="28px Arial";
-    text.split("\n").forEach((t,i)=>{
-        ctx.fillText(t, canvas.width/2, canvas.height/2+i*34);
-    });
+function loadGame() {
+  const data = localStorage.getItem("hatirlayanDunyaSave");
+  return data ? JSON.parse(data) : null;
 }
 
-/* ==== OYUN DURUM ==== */
-let phase = "main";
-let stage = 0;
-let playerPos = 1; // 0 sol,1 orta,2 sağ
-let dangerPos = -1;
-let waitTimer = null;
-
-/* ==== BAŞLAT ==== */
-function startGame(){
-    document.getElementById("startScreen").style.display="none";
-    canvas.style.display="block";
-    document.getElementById("choices").style.display="flex";
-    speak("Başladın.");
-    nextMain();
+function resetGame() {
+  localStorage.removeItem("hatirlayanDunyaSave");
+  location.reload();
 }
 
-/* ==== ANA OYUN ==== */
-let mainStep = 0;
-function nextMain(){
-    if(mainStep>=5){
-        startMiniGame();
-        return;
-    }
-    mainStep++;
-    const dir = Math.random()>0.5?"SOL":"SAĞ";
-    draw(dir);
-    speak(dir+"a bas.");
+// ================== OYUNCU ==================
+let player = {
+  traits: {
+    empati: 0,
+    korkak: 0,
+    bencil: 0,
+    yalanci: 0
+  }
+};
+
+// ================== NPC ==================
+let npc = {
+  name: "Murat",
+  trust: 50,
+  memory: []
+};
+
+// ================== SAHNELER ==================
+const scenes = {
+  start: {
+    text: "Yağmur altında Murat sana sesleniyor. Yardım istiyor.",
+    choices: [
+      {
+        text: "Yardım et",
+        effect: () => {
+          player.traits.empati++;
+          npc.trust += 15;
+          npc.memory.push("yardım ettin");
+        },
+        next: "yardim"
+      },
+      {
+        text: "Yalan söyle ve kaç",
+        effect: () => {
+          player.traits.yalanci++;
+          player.traits.korkak++;
+          npc.trust -= 20;
+          npc.memory.push("yalan söyledin");
+        },
+        next: "kacis"
+      }
+    ]
+  },
+
+  yardim: {
+    text: "Murat derin bir nefes alıyor. 'Bunu unutmayacağım.'",
+    choices: [{ text: "Devam et", next: "ilerle" }]
+  },
+
+  kacis: {
+    text: "Kalbin hızlı atıyor. Arkana bakıyorsun.",
+    choices: [
+      {
+        text: "Geri dön",
+        effect: () => {
+          player.traits.empati++;
+          npc.trust += 5;
+          npc.memory.push("geri döndün");
+        },
+        next: "ilerle"
+      },
+      {
+        text: "Umursama",
+        effect: () => {
+          player.traits.bencil++;
+        },
+        next: "ilerle"
+      }
+    ]
+  },
+
+  ilerle: {
+    text: () =>
+      npc.trust >= 50
+        ? "Murat sana yakın duruyor."
+        : "Murat mesafeli. Gözlerini kaçırıyor.",
+    choices: [{ text: "Yüzleşmeye devam et", next: "final" }]
+  },
+
+  final: {
+    text: () => generateEnding(),
+    choices: [
+      {
+        text: "🔁 Yeniden Oyna",
+        effect: resetGame,
+        next: "start"
+      }
+    ]
+  }
+};
+
+// ================== SON MOTORU ==================
+function generateEnding() {
+  const t = player.traits;
+
+  let ending = "";
+
+  if (t.empati >= 2 && npc.trust >= 60) {
+    ending = "🟢 AFFEDİLEN SON\nEmpati seni kurtardı.";
+  } else if (t.bencil >= 1 && t.empati === 0) {
+    ending = "🔴 YALNIZLIK SONU\nHerkesi sen ittin.";
+  } else if (t.yalanci >= 1 && npc.trust < 40) {
+    ending = "⚫ YÜZLEŞME SONU\nYalanlar hatırlanır.";
+  } else if (t.korkak >= 1) {
+    ending = "🟡 KAÇIŞ SONU\nHayatta kaldın ama eksik.";
+  } else {
+    ending = "🔵 BELİRSİZ SON\nEn tehlikelisi buydu.";
+  }
+
+  return `
+${ending}
+
+---  
+OYUN SENİ YARGILADI
+
+Empati: ${t.empati}
+Korkaklık: ${t.korkak}
+Bencillik: ${t.bencil}
+Yalancılık: ${t.yalanci}
+
+Murat’ın hafızası:
+${npc.memory.join(", ") || "Hiçbir şey"}
+`;
 }
 
-function choose(){
-    nextMain();
+// ================== MOTOR ==================
+const textEl = document.getElementById("text");
+const choicesEl = document.getElementById("choices");
+
+function showScene(name) {
+  const scene = scenes[name];
+  saveGame(name);
+
+  textEl.innerHTML =
+    typeof scene.text === "function" ? scene.text() : scene.text;
+
+  choicesEl.innerHTML = "";
+
+  scene.choices.forEach(choice => {
+    const btn = document.createElement("button");
+    btn.innerText = choice.text;
+    btn.onclick = () => {
+      if (choice.effect) choice.effect();
+      showScene(choice.next);
+    };
+    choicesEl.appendChild(btn);
+  });
 }
 
-/* ==== MINI GAME ==== */
-function startMiniGame(){
-    document.getElementById("choices").style.display="none";
-    speak("Bu bir oyun değil. Bu bir sınav.");
-    setTimeout(()=>{
-        stage=1;
-        phase="stage1";
-        stageOne();
-    },4000);
-}
-
-/* ==== 1. AŞAMA ==== */
-function stageOne(){
-    speak("Harflerden kaç.");
-    nextLetter();
-}
-
-function nextLetter(){
-    if(stage!==1) return;
-    dangerPos = Math.floor(Math.random()*3);
-    drawStage("HARF", dangerPos);
-
-    if(playerPos===dangerPos){
-        death("Bir harf yetti.");
-        return;
-    }
-    setTimeout(nextLetter,700);
-}
-
-/* ==== 2. AŞAMA ==== */
-function stageTwo(){
-    phase="stage2";
-    speak("Zemine dikkat et.");
-    nextHole();
-}
-
-function nextHole(){
-    if(stage!==2) return;
-    dangerPos = Math.floor(Math.random()*3);
-    drawStage("DELİK", dangerPos);
-
-    if(playerPos===dangerPos){
-        death("Düştün.");
-        return;
-    }
-    setTimeout(nextHole,800);
-}
-
-/* ==== 3. AŞAMA ==== */
-function stageThree(){
-    phase="stage3";
-    speak("Sağa geç.");
-    setTimeout(()=>{
-        if(playerPos===2){
-            death("Bana güvendin.");
-        }else{
-            stage=4;
-            stageFour();
-        }
-    },2000);
-}
-
-/* ==== 4. AŞAMA ==== */
-function stageFour(){
-    phase="stage4";
-    speak("Bekle.");
-    waitTimer=setTimeout(()=>{
-        stage=5;
-        stageFive();
-    },5000);
-}
-
-/* ==== 5. AŞAMA ==== */
-function stageFive(){
-    draw("BEKLE / SİL");
-    speak("Son karar.");
-    document.getElementById("decision").style.display="flex";
-}
-
-/* ==== ÇİZİM ==== */
-function drawStage(label,danger){
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-    const w=canvas.width/3;
-    for(let i=0;i<3;i++){
-        ctx.strokeRect(i*w,canvas.height/2, w,100);
-        if(i===danger){
-            ctx.fillText(label, i*w+w/2, canvas.height/2+60);
-        }
-        if(i===playerPos){
-            ctx.fillText("SEN", i*w+w/2, canvas.height/2+130);
-        }
-    }
-}
-
-/* ==== DOKUNMA ==== */
-canvas.addEventListener("touchstart",()=>{
-    if(phase==="stage4"){
-        clearTimeout(waitTimer);
-        death("Sabredemedin.");
-        return;
-    }
-    playerPos = (playerPos+1)%3;
-});
-
-/* ==== ÖLÜM ==== */
-function death(text){
-    phase="dead";
-    draw(text+"\nSON");
-    speak(text);
-}
-
-/* ==== SONLAR ==== */
-function deleteEntity(){
-    draw("GİZLİ KÖTÜ SON");
-    speak("İtaat ettin.");
-}
-
-function waitEntity(){
-    draw("GİZLİ İYİ SON");
-    speak("Özgürsün.");
+// ================== OYUN BAŞLAT ==================
+const saved = loadGame();
+if (saved) {
+  player = saved.player;
+  npc = saved.npc;
+  showScene(saved.scene);
+} else {
+  showScene("start");
 }
