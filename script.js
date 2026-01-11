@@ -1,21 +1,32 @@
-// ================== KAYIT / YÜKLEME ==================
+// ================== YÜKLENDİ TESTİ ==================
+console.log("game.js yüklendi");
+alert("game.js yüklendi");
+
+// ================== KAYIT SİSTEMİ ==================
+const SAVE_KEY = "hatirlayanDunyaSave";
+
 function saveGame(sceneName) {
   const data = {
     player,
     npc,
     scene: sceneName
   };
-  localStorage.setItem("hatirlayanDunyaSave", JSON.stringify(data));
+  localStorage.setItem(SAVE_KEY, JSON.stringify(data));
 }
 
 function loadGame() {
-  const data = localStorage.getItem("hatirlayanDunyaSave");
-  return data ? JSON.parse(data) : null;
+  try {
+    const data = localStorage.getItem(SAVE_KEY);
+    return data ? JSON.parse(data) : null;
+  } catch (e) {
+    localStorage.removeItem(SAVE_KEY);
+    return null;
+  }
 }
 
 function resetGame() {
-  localStorage.removeItem("hatirlayanDunyaSave");
-  location.reload();
+  localStorage.removeItem(SAVE_KEY);
+  showScene("start");
 }
 
 // ================== OYUNCU ==================
@@ -63,12 +74,14 @@ const scenes = {
   },
 
   yardim: {
-    text: "Murat derin bir nefes alıyor. 'Bunu unutmayacağım.'",
-    choices: [{ text: "Devam et", next: "ilerle" }]
+    text: "Murat rahatlıyor. 'Bunu unutmayacağım.'",
+    choices: [
+      { text: "Devam et", next: "ilerle" }
+    ]
   },
 
   kacis: {
-    text: "Kalbin hızlı atıyor. Arkana bakıyorsun.",
+    text: "Kalbin hızlı atıyor. Murat arkanda kaldı.",
     choices: [
       {
         text: "Geri dön",
@@ -90,11 +103,14 @@ const scenes = {
   },
 
   ilerle: {
-    text: () =>
-      npc.trust >= 50
+    text: () => {
+      return npc.trust >= 50
         ? "Murat sana yakın duruyor."
-        : "Murat mesafeli. Gözlerini kaçırıyor.",
-    choices: [{ text: "Yüzleşmeye devam et", next: "final" }]
+        : "Murat mesafeli. Gözlerini kaçırıyor.";
+    },
+    choices: [
+      { text: "Yüzleş", next: "final" }
+    ]
   },
 
   final: {
@@ -109,10 +125,9 @@ const scenes = {
   }
 };
 
-// ================== SON MOTORU ==================
+// ================== SON HESAPLAMA ==================
 function generateEnding() {
   const t = player.traits;
-
   let ending = "";
 
   if (t.empati >= 2 && npc.trust >= 60) {
@@ -120,17 +135,17 @@ function generateEnding() {
   } else if (t.bencil >= 1 && t.empati === 0) {
     ending = "🔴 YALNIZLIK SONU\nHerkesi sen ittin.";
   } else if (t.yalanci >= 1 && npc.trust < 40) {
-    ending = "⚫ YÜZLEŞME SONU\nYalanlar hatırlanır.";
+    ending = "⚫ YÜZLEŞME SONU\nYalanlar unutulmaz.";
   } else if (t.korkak >= 1) {
-    ending = "🟡 KAÇIŞ SONU\nHayatta kaldın ama eksik.";
+    ending = "🟡 KAÇIŞ SONU\nOradaydın ama değildin.";
   } else {
-    ending = "🔵 BELİRSİZ SON\nEn tehlikelisi buydu.";
+    ending = "🔵 BELİRSİZ SON\nBu en tehlikelisi.";
   }
 
   return `
 ${ending}
 
----  
+----------------
 OYUN SENİ YARGILADI
 
 Empati: ${t.empati}
@@ -138,7 +153,7 @@ Korkaklık: ${t.korkak}
 Bencillik: ${t.bencil}
 Yalancılık: ${t.yalanci}
 
-Murat’ın hafızası:
+Murat'ın hafızası:
 ${npc.memory.join(", ") || "Hiçbir şey"}
 `;
 }
@@ -149,6 +164,11 @@ const choicesEl = document.getElementById("choices");
 
 function showScene(name) {
   const scene = scenes[name];
+  if (!scene) {
+    console.error("Sahne bulunamadı:", name);
+    return;
+  }
+
   saveGame(name);
 
   textEl.innerHTML =
@@ -167,12 +187,6 @@ function showScene(name) {
   });
 }
 
-// ================== OYUN BAŞLAT ==================
-const saved = loadGame();
-if (saved) {
-  player = saved.player;
-  npc = saved.npc;
-  showScene(saved.scene);
-} else {
-  showScene("start");
-}
+// ================== OYUNU ZORLA BAŞLAT ==================
+localStorage.removeItem(SAVE_KEY); // BOZUK KAYITLAR İÇİN
+showScene("start");
