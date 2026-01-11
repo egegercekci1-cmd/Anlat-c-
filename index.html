@@ -1,29 +1,18 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-    <meta charset="UTF-8">
-    <title>Anlatıcı Sana Kızıyor</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <title>Hatırlayan Dünya</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<div id="startScreen">
-    <button onclick="startGame()">Sesi Başlat</button>
+<div id="game">
+  <h1 id="title">Hatırlayan Dünya</h1>
+  <p id="text"></p>
+  <div id="choices"></div>
 </div>
 
-<canvas id="game"></canvas>
-
-<div id="choices">
-    <button onclick="choose('left')">SOL</button>
-    <button onclick="choose('right')">SAĞ</button>
-</div>
-
-<div id="decision">
-    <button onclick="waitEntity()">BEKLE</button>
-    <button onclick="deleteEntity()">SİL</button>
-</div>
-
-<script src="script.js"></script>
+<script src="game.js"></script>
 </body>
 </html>
