@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>DevletSim Full</title>
+<title>DevletSim Ultimate</title>
 
 <style>
 
@@ -13,30 +13,31 @@ color:white;
 }
 
 h1{
-font-size:45px;
+font-size:50px;
 }
 
 #stats{
 background:#1e293b;
-padding:20px;
+padding:25px;
 margin:20px auto;
-width:350px;
-border-radius:10px;
-font-size:20px;
+width:380px;
+border-radius:12px;
+font-size:22px;
 }
 
 button{
-font-size:20px;
-padding:15px 20px;
-margin:10px;
+font-size:26px;
+padding:25px 40px;
+margin:12px;
 border:none;
-border-radius:10px;
+border-radius:12px;
 cursor:pointer;
 transition:0.2s;
+width:260px;
 }
 
 button:hover{
-transform:scale(1.1);
+transform:scale(1.08);
 }
 
 .factory{background:#f59e0b;}
@@ -45,20 +46,23 @@ transform:scale(1.1);
 .nature{background:#22c55e;}
 .tax{background:#a855f7;}
 .city{background:#14b8a6;}
+.space{background:#eab308;}
+.save{background:#64748b;}
 
 .map{
 display:grid;
-grid-template-columns:120px 120px 120px;
-gap:10px;
+grid-template-columns:140px 140px 140px;
+gap:12px;
 justify-content:center;
-margin-top:20px;
+margin-top:25px;
 }
 
 .country{
 background:#334155;
-padding:25px;
-border-radius:10px;
+padding:30px;
+border-radius:12px;
 cursor:pointer;
+font-size:20px;
 }
 
 .player{
@@ -70,7 +74,7 @@ background:#ef4444;
 }
 
 #event{
-font-size:22px;
+font-size:24px;
 margin-top:20px;
 }
 
@@ -79,7 +83,7 @@ margin-top:20px;
 
 <body>
 
-<h1>🌍 DevletSim Full</h1>
+<h1>🌍 DevletSim Ultimate</h1>
 
 <div id="stats"></div>
 
@@ -90,6 +94,9 @@ margin-top:20px;
 <button class="tax" onclick="taxUp()">💰 Vergi +</button>
 <button class="tax" onclick="taxDown()">💵 Vergi -</button>
 <button class="city" onclick="city()">🏙 Şehir Kur</button>
+<button class="space" onclick="space()">🛰 Uzay Programı</button>
+<button class="save" onclick="save()">💾 Kaydet</button>
+<button class="save" onclick="load()">📂 Yükle</button>
 
 <h2>🗺 Harita</h2>
 
@@ -106,7 +113,7 @@ margin-top:20px;
 
 <script>
 
-let para=120
+let para=150
 let mutluluk=70
 let ordu=60
 let cevre=80
@@ -114,9 +121,10 @@ let nufus=1000000
 let vergi=10
 let sehir=1
 let toprak=1
+let uzay=0
 let tur=1
 
-let dusmanOrdu=[40,60,80]
+let dusmanOrdu=[40,70,90]
 
 function goster(){
 
@@ -130,6 +138,7 @@ document.getElementById("stats").innerHTML=
 "👥 Nüfus: "+nufus+"<br>"+
 "🏙 Şehir: "+sehir+"<br>"+
 "🌍 Toprak: "+toprak+"<br>"+
+"🛰 Uzay: "+uzay+"<br>"+
 "💵 Vergi: %"+vergi
 
 }
@@ -139,9 +148,7 @@ document.getElementById("event").innerHTML=text
 }
 
 function gelir(){
-
 para+=Math.floor(nufus/100000)*vergi
-
 }
 
 function olay(){
@@ -149,12 +156,12 @@ function olay(){
 let r=Math.floor(Math.random()*5)
 
 if(r==0){
-para-=20
+para-=25
 event("🌍 Deprem oldu!")
 }
 
 if(r==1){
-para+=30
+para+=40
 event("🏖 Turizm patladı!")
 }
 
@@ -175,6 +182,21 @@ event("👶 Nüfus arttı!")
 
 }
 
+function election(){
+
+if(mutluluk>=50){
+
+event("🗳 Seçimi kazandın! Halk seni tekrar seçti.")
+
+}else{
+
+alert("🗳 Seçimi kaybettin! Halk başka lider seçti.")
+location.reload()
+
+}
+
+}
+
 function nextTurn(){
 
 gelir()
@@ -183,6 +205,10 @@ if(mutluluk>70) nufus+=20000
 if(mutluluk<40) nufus-=20000
 
 tur++
+
+if(tur % 5 === 0){
+election()
+}
 
 olay()
 
@@ -193,70 +219,69 @@ goster()
 }
 
 function factory(){
-
-para+=30
+para+=40
 cevre-=10
 mutluluk+=3
-
 nextTurn()
-
 }
 
 function school(){
-
-para-=20
-mutluluk+=12
-
+para-=25
+mutluluk+=15
 nextTurn()
-
 }
 
 function army(){
-
-para-=25
-ordu+=20
-
+para-=30
+ordu+=25
 nextTurn()
-
 }
 
 function nature(){
-
-para-=15
-cevre+=20
+para-=20
+cevre+=25
 mutluluk+=5
-
 nextTurn()
-
 }
 
 function taxUp(){
-
 vergi+=2
 mutluluk-=5
-
 goster()
-
 }
 
 function taxDown(){
-
 vergi-=2
 mutluluk+=5
-
 goster()
-
 }
 
 function city(){
 
-if(para>=60){
+if(para>=80){
 
-para-=60
+para-=80
 sehir++
-nufus+=100000
-
+nufus+=120000
 event("🏙 Yeni şehir kuruldu!")
+
+}else{
+
+event("Yeterli para yok!")
+
+}
+
+goster()
+
+}
+
+function space(){
+
+if(para>=120){
+
+para-=120
+uzay++
+event("🛰 Uzay programı ilerledi!")
 
 }else{
 
@@ -272,18 +297,53 @@ function attack(i){
 
 if(ordu>dusmanOrdu[i]){
 
-event("⚔️ Savaşı kazandın! Toprak aldın!")
+event("⚔️ Savaşı kazandın!")
 
 toprak++
-ordu-=10
-para+=40
+ordu-=15
+para+=60
 
 }else{
 
 event("⚔️ Savaşı kaybettin!")
 
-mutluluk-=10
-ordu-=10
+mutluluk-=12
+ordu-=15
+
+}
+
+goster()
+
+}
+
+function save(){
+
+localStorage.setItem("devletsim",JSON.stringify({
+para,mutluluk,ordu,cevre,nufus,vergi,sehir,toprak,uzay,tur
+}))
+
+event("💾 Oyun kaydedildi!")
+
+}
+
+function load(){
+
+let data=JSON.parse(localStorage.getItem("devletsim"))
+
+if(data){
+
+para=data.para
+mutluluk=data.mutluluk
+ordu=data.ordu
+cevre=data.cevre
+nufus=data.nufus
+vergi=data.vergi
+sehir=data.sehir
+toprak=data.toprak
+uzay=data.uzay
+tur=data.tur
+
+event("📂 Oyun yüklendi!")
 
 }
 
@@ -300,9 +360,9 @@ location.reload()
 
 }
 
-if(tur>30){
+if(tur>40){
 
-let skor=para+ordu+mutluluk+toprak*50
+let skor=para+ordu+mutluluk+toprak*50+uzay*100
 
 alert("Oyun bitti! Skor: "+skor)
 
