@@ -1,84 +1,146 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>DevletSim</title>
+<title>DevletSim Ultimate</title>
+
 <style>
+
 body{
-font-family: Arial;
+font-family:Arial;
 text-align:center;
-background:#1e1e2f;
+background:#0f172a;
 color:white;
 }
 
-button{
-padding:10px;
-margin:10px;
-font-size:16px;
-cursor:pointer;
+h1{
+font-size:50px;
 }
 
 #stats{
+background:#1e293b;
+padding:20px;
+margin:20px auto;
+width:350px;
+border-radius:10px;
 font-size:20px;
-margin:20px;
 }
+
+button{
+font-size:22px;
+padding:18px 25px;
+margin:10px;
+border:none;
+border-radius:10px;
+cursor:pointer;
+transition:0.2s;
+}
+
+button:hover{
+transform:scale(1.1);
+}
+
+.factory{background:#f59e0b;}
+.school{background:#3b82f6;}
+.army{background:#ef4444;}
+.nature{background:#22c55e;}
+.tax{background:#a855f7;}
+.city{background:#14b8a6;}
+
+#event{
+font-size:22px;
+margin-top:20px;
+}
+
 </style>
 </head>
 
 <body>
 
-<h1>🌍 DevletSim</h1>
+<h1>🌍 DevletSim Ultimate</h1>
 <h3>Ülkeni yönet!</h3>
 
 <div id="stats"></div>
 
-<button onclick="factory()">🏭 Fabrika Kur</button>
-<button onclick="school()">🏫 Okul Yap</button>
-<button onclick="army()">🛡️ Orduyu Güçlendir</button>
-<button onclick="nature()">🌱 Doğa Projesi</button>
+<button class="factory" onclick="factory()">🏭 Fabrika</button>
+<button class="school" onclick="school()">🏫 Okul</button>
+<button class="army" onclick="army()">🛡 Ordu</button>
+<button class="nature" onclick="nature()">🌱 Doğa</button>
+<button class="tax" onclick="taxUp()">💰 Vergi +</button>
+<button class="tax" onclick="taxDown()">💵 Vergi -</button>
+<button class="city" onclick="city()">🏙 Şehir Kur</button>
 
 <h3 id="event"></h3>
 
 <script>
 
-let para = 100
-let mutluluk = 70
-let ordu = 50
-let cevre = 80
-let tur = 1
+let para=100
+let mutluluk=70
+let ordu=50
+let cevre=80
+let nufus=1000000
+let vergi=10
+let sehir=1
+let tur=1
 
 function goster(){
 
-document.getElementById("stats").innerHTML =
+document.getElementById("stats").innerHTML=
+
 "Tur: "+tur+"<br>"+
 "💰 Para: "+para+"<br>"+
 "😊 Mutluluk: "+mutluluk+"<br>"+
-"🛡️ Ordu: "+ordu+"<br>"+
-"🌱 Çevre: "+cevre
+"🛡 Ordu: "+ordu+"<br>"+
+"🌱 Çevre: "+cevre+"<br>"+
+"👥 Nüfus: "+nufus+"<br>"+
+"🏙 Şehir: "+sehir+"<br>"+
+"💵 Vergi: %"+vergi
 
 }
 
 function olay(){
 
-let r = Math.floor(Math.random()*4)
+let r=Math.floor(Math.random()*6)
 
 if(r==0){
-para -=20
-event("🌍 Deprem oldu! -20 para")
+para-=20
+event("🌍 Deprem oldu!")
 }
 
 if(r==1){
-para +=15
-event("🔬 Teknoloji keşfi! +15 para")
+para+=30
+event("🏖 Turizm patladı!")
 }
 
 if(r==2){
-mutluluk -=20
-event("😡 Halk protestosu! -20 mutluluk")
+mutluluk-=15
+event("😡 Protesto!")
 }
 
 if(r==3){
-para +=25
-event("🏖️ Turizm patladı! +25 para")
+
+if(ordu>60){
+
+para+=40
+event("⚔️ Savaşı kazandın!")
+
+}else{
+
+para-=30
+mutluluk-=10
+event("⚔️ Savaşı kaybettin!")
+
+}
+
+}
+
+if(r==4){
+nufus+=50000
+event("👶 Nüfus arttı!")
+}
+
+if(r==5){
+cevre-=10
+event("🏭 Kirlilik arttı!")
 }
 
 }
@@ -87,53 +149,107 @@ function event(text){
 document.getElementById("event").innerHTML=text
 }
 
+function gelir(){
+
+para+=Math.floor(nufus/100000)*vergi
+
+}
+
 function nextTurn(){
+
+gelir()
+
+if(mutluluk>70) nufus+=20000
+if(mutluluk<40) nufus-=20000
+
 tur++
+
 olay()
+
 kontrol()
+
 goster()
+
 }
 
 function factory(){
-para +=20
-cevre -=10
-mutluluk +=5
+para+=30
+cevre-=10
+mutluluk+=3
 nextTurn()
 }
 
 function school(){
-para -=10
-mutluluk +=10
+para-=20
+mutluluk+=12
 nextTurn()
 }
 
 function army(){
-para -=15
-ordu +=15
+para-=25
+ordu+=20
 nextTurn()
 }
 
 function nature(){
-para -=10
-cevre +=15
-mutluluk +=5
+para-=15
+cevre+=20
+mutluluk+=5
 nextTurn()
+}
+
+function taxUp(){
+
+vergi+=2
+mutluluk-=5
+
+goster()
+
+}
+
+function taxDown(){
+
+vergi-=2
+mutluluk+=5
+
+goster()
+
+}
+
+function city(){
+
+if(para>=50){
+
+para-=50
+sehir++
+nufus+=100000
+
+event("🏙 Yeni şehir kuruldu!")
+
+}else{
+
+event("Yeterli para yok!")
+
+}
+
+goster()
+
 }
 
 function kontrol(){
 
 if(para<=0 || mutluluk<=0 || cevre<=0){
-alert("Ülken çöktü! Oyunu kaybettin.")
+
+alert("Ülken çöktü!")
 location.reload()
+
 }
 
-if(tur>20){
+if(tur>25){
 
-if(para>200 && mutluluk>60 && ordu>60){
-alert("Tebrikler! Süper lider oldun 👑")
-}else{
-alert("20 tur bitti. Daha iyi yönetebilirdin.")
-}
+let skor=para+ordu+mutluluk
+
+alert("Oyun bitti! Skor: "+skor)
 
 location.reload()
 
