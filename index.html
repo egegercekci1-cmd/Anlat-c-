@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>DevletSim Map</title>
+<title>DevletSim Full</title>
 
 <style>
 
@@ -12,12 +12,17 @@ background:#0f172a;
 color:white;
 }
 
+h1{
+font-size:45px;
+}
+
 #stats{
 background:#1e293b;
 padding:20px;
 margin:20px auto;
 width:350px;
 border-radius:10px;
+font-size:20px;
 }
 
 button{
@@ -27,11 +32,19 @@ margin:10px;
 border:none;
 border-radius:10px;
 cursor:pointer;
+transition:0.2s;
 }
 
 button:hover{
-transform:scale(1.05);
+transform:scale(1.1);
 }
+
+.factory{background:#f59e0b;}
+.school{background:#3b82f6;}
+.army{background:#ef4444;}
+.nature{background:#22c55e;}
+.tax{background:#a855f7;}
+.city{background:#14b8a6;}
 
 .map{
 display:grid;
@@ -43,8 +56,9 @@ margin-top:20px;
 
 .country{
 background:#334155;
-padding:30px;
+padding:25px;
 border-radius:10px;
+cursor:pointer;
 }
 
 .player{
@@ -55,18 +69,27 @@ background:#22c55e;
 background:#ef4444;
 }
 
+#event{
+font-size:22px;
+margin-top:20px;
+}
+
 </style>
 </head>
 
 <body>
 
-<h1>🌍 DevletSim Harita</h1>
+<h1>🌍 DevletSim Full</h1>
 
 <div id="stats"></div>
 
-<button onclick="factory()">🏭 Fabrika</button>
-<button onclick="army()">🛡 Ordu</button>
-<button onclick="school()">🏫 Okul</button>
+<button class="factory" onclick="factory()">🏭 Fabrika</button>
+<button class="school" onclick="school()">🏫 Okul</button>
+<button class="army" onclick="army()">🛡 Ordu</button>
+<button class="nature" onclick="nature()">🌱 Doğa</button>
+<button class="tax" onclick="taxUp()">💰 Vergi +</button>
+<button class="tax" onclick="taxDown()">💵 Vergi -</button>
+<button class="city" onclick="city()">🏙 Şehir Kur</button>
 
 <h2>🗺 Harita</h2>
 
@@ -75,7 +98,6 @@ background:#ef4444;
 <div class="country enemy" onclick="attack(0)">Ülke A</div>
 <div class="country player">Sen</div>
 <div class="country enemy" onclick="attack(1)">Ülke B</div>
-
 <div class="country enemy" onclick="attack(2)">Ülke C</div>
 
 </div>
@@ -84,55 +106,163 @@ background:#ef4444;
 
 <script>
 
-let para=100
+let para=120
 let mutluluk=70
 let ordu=60
+let cevre=80
+let nufus=1000000
+let vergi=10
+let sehir=1
 let toprak=1
+let tur=1
 
-let dusmanOrdu=[40,50,70]
+let dusmanOrdu=[40,60,80]
 
 function goster(){
 
 document.getElementById("stats").innerHTML=
 
+"Tur: "+tur+"<br>"+
 "💰 Para: "+para+"<br>"+
 "😊 Mutluluk: "+mutluluk+"<br>"+
 "🛡 Ordu: "+ordu+"<br>"+
-"🌍 Toprak: "+toprak
+"🌱 Çevre: "+cevre+"<br>"+
+"👥 Nüfus: "+nufus+"<br>"+
+"🏙 Şehir: "+sehir+"<br>"+
+"🌍 Toprak: "+toprak+"<br>"+
+"💵 Vergi: %"+vergi
 
 }
 
 function event(text){
-
 document.getElementById("event").innerHTML=text
+}
+
+function gelir(){
+
+para+=Math.floor(nufus/100000)*vergi
+
+}
+
+function olay(){
+
+let r=Math.floor(Math.random()*5)
+
+if(r==0){
+para-=20
+event("🌍 Deprem oldu!")
+}
+
+if(r==1){
+para+=30
+event("🏖 Turizm patladı!")
+}
+
+if(r==2){
+mutluluk-=10
+event("😡 Protesto!")
+}
+
+if(r==3){
+cevre-=10
+event("🏭 Kirlilik arttı!")
+}
+
+if(r==4){
+nufus+=50000
+event("👶 Nüfus arttı!")
+}
+
+}
+
+function nextTurn(){
+
+gelir()
+
+if(mutluluk>70) nufus+=20000
+if(mutluluk<40) nufus-=20000
+
+tur++
+
+olay()
+
+kontrol()
+
+goster()
 
 }
 
 function factory(){
 
-para+=20
+para+=30
+cevre-=10
 mutluluk+=3
-event("Yeni fabrika kuruldu!")
 
-goster()
+nextTurn()
 
 }
 
 function school(){
 
-mutluluk+=10
-para-=10
-event("Yeni okul yapıldı!")
+para-=20
+mutluluk+=12
 
-goster()
+nextTurn()
 
 }
 
 function army(){
 
+para-=25
 ordu+=20
-para-=20
-event("Ordu güçlendi!")
+
+nextTurn()
+
+}
+
+function nature(){
+
+para-=15
+cevre+=20
+mutluluk+=5
+
+nextTurn()
+
+}
+
+function taxUp(){
+
+vergi+=2
+mutluluk-=5
+
+goster()
+
+}
+
+function taxDown(){
+
+vergi-=2
+mutluluk+=5
+
+goster()
+
+}
+
+function city(){
+
+if(para>=60){
+
+para-=60
+sehir++
+nufus+=100000
+
+event("🏙 Yeni şehir kuruldu!")
+
+}else{
+
+event("Yeterli para yok!")
+
+}
 
 goster()
 
@@ -142,21 +272,43 @@ function attack(i){
 
 if(ordu>dusmanOrdu[i]){
 
-event("⚔️ Savaşı kazandın! Yeni toprak aldın.")
+event("⚔️ Savaşı kazandın! Toprak aldın!")
 
 toprak++
-
 ordu-=10
+para+=40
 
 }else{
 
 event("⚔️ Savaşı kaybettin!")
 
 mutluluk-=10
+ordu-=10
 
 }
 
 goster()
+
+}
+
+function kontrol(){
+
+if(para<=0 || mutluluk<=0 || cevre<=0){
+
+alert("Ülken çöktü!")
+location.reload()
+
+}
+
+if(tur>30){
+
+let skor=para+ordu+mutluluk+toprak*50
+
+alert("Oyun bitti! Skor: "+skor)
+
+location.reload()
+
+}
 
 }
 
