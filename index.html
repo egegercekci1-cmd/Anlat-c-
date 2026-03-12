@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+<meta charset="UTF-8">
 <title>DevletSim World</title>
 
 <style>
@@ -13,54 +14,46 @@ text-align:center;
 }
 
 h1{
-font-size:50px;
+font-size:45px;
 }
 
 #stats{
 background:#1e293b;
-padding:25px;
+padding:20px;
+width:350px;
 margin:20px auto;
-width:380px;
-border-radius:12px;
-font-size:22px;
+border-radius:10px;
+font-size:20px;
 }
 
 button{
-font-size:24px;
-padding:20px 30px;
-margin:10px;
+font-size:18px;
+padding:12px;
+margin:5px;
 border:none;
-border-radius:12px;
+border-radius:8px;
 cursor:pointer;
-width:240px;
+width:170px;
 }
 
 button:hover{
 transform:scale(1.05);
 }
 
-.factory{background:#f59e0b;}
-.school{background:#3b82f6;}
-.army{background:#ef4444;}
-.nature{background:#22c55e;}
-.tax{background:#a855f7;}
-.city{background:#14b8a6;}
-.space{background:#eab308;}
-.save{background:#64748b;}
-
 .map{
 display:grid;
-grid-template-columns:repeat(5,140px);
-gap:12px;
+grid-template-columns:repeat(10,100px);
+gap:8px;
 justify-content:center;
-margin-top:30px;
+margin-top:25px;
 }
 
 .country{
 background:#334155;
-padding:25px;
-border-radius:12px;
+padding:12px;
+border-radius:8px;
 cursor:pointer;
+font-size:13px;
 }
 
 .enemy{
@@ -72,9 +65,11 @@ background:#22c55e;
 }
 
 #event{
-font-size:24px;
 margin-top:20px;
+font-size:20px;
 }
+
+/* seçim ekranı */
 
 #electionScreen{
 display:none;
@@ -86,8 +81,35 @@ height:100%;
 background:#000000dd;
 color:white;
 text-align:center;
-padding-top:150px;
-font-size:30px;
+padding-top:120px;
+}
+
+.chart{
+display:flex;
+justify-content:center;
+gap:120px;
+margin-top:50px;
+}
+
+.barBox{
+display:flex;
+flex-direction:column;
+align-items:center;
+}
+
+.bar{
+width:90px;
+height:0px;
+border-radius:10px;
+transition:1s;
+}
+
+.playerBar{
+background:#22c55e;
+}
+
+.enemyBar{
+background:#ef4444;
 }
 
 </style>
@@ -100,41 +122,47 @@ font-size:30px;
 
 <div id="stats"></div>
 
-<button class="factory" onclick="factory()">🏭 Fabrika</button>
-<button class="school" onclick="school()">🏫 Okul</button>
-<button class="army" onclick="army()">🛡 Ordu</button>
-<button class="nature" onclick="nature()">🌱 Doğa</button>
-<button class="tax" onclick="taxUp()">💰 Vergi +</button>
-<button class="tax" onclick="taxDown()">💵 Vergi -</button>
-<button class="city" onclick="city()">🏙 Şehir Kur</button>
-<button class="space" onclick="space()">🛰 Uzay Programı</button>
-<button class="save" onclick="save()">💾 Kaydet</button>
-<button class="save" onclick="load()">📂 Yükle</button>
+<button onclick="factory()">🏭 Fabrika</button>
+<button onclick="school()">🏫 Okul</button>
+<button onclick="armyUp()">🪖 Ordu</button>
+<button onclick="nature()">🌱 Çevre</button>
+<button onclick="taxUp()">💰 Vergi +</button>
+<button onclick="taxDown()">💵 Vergi -</button>
+<button onclick="city()">🏙 Şehir</button>
+<button onclick="space()">🚀 Uzay</button>
+<button onclick="save()">💾 Kaydet</button>
+<button onclick="load()">📂 Yükle</button>
 
 <h2>🗺 Dünya Haritası</h2>
 
-<div class="map">
-
-<div class="country enemy" onclick="attack(0)">🇫🇷 Fransa</div>
-<div class="country enemy" onclick="attack(1)">🇩🇪 Almanya</div>
-<div class="country enemy" onclick="attack(2)">🇮🇹 İtalya</div>
-<div class="country enemy" onclick="attack(3)">🇪🇸 İspanya</div>
-<div class="country enemy" onclick="attack(4)">🇬🇧 İngiltere</div>
-
-<div class="country enemy" onclick="attack(5)">🇷🇺 Rusya</div>
-<div class="country player">🇹🇷 Sen</div>
-<div class="country enemy" onclick="attack(6)">🇬🇷 Yunanistan</div>
-<div class="country enemy" onclick="attack(7)">🇮🇷 İran</div>
-<div class="country enemy" onclick="attack(8)">🇨🇳 Çin</div>
-
-</div>
+<div class="map" id="map"></div>
 
 <h3 id="event"></h3>
 
+<!-- seçim ekranı -->
+
 <div id="electionScreen">
-<h1>🗳 Seçim Zamanı</h1>
-<p id="voteResult"></p>
+
+<h1>🗳 Seçim Sonuçları</h1>
+
+<div class="chart">
+
+<div class="barBox">
+<div id="playerBar" class="bar playerBar"></div>
+<p>Sen</p>
+</div>
+
+<div class="barBox">
+<div id="enemyBar" class="bar enemyBar"></div>
+<p>Rakip</p>
+</div>
+
+</div>
+
+<h2 id="voteText"></h2>
+
 <button onclick="closeElection()">Devam</button>
+
 </div>
 
 <script>
@@ -142,31 +170,50 @@ font-size:30px;
 let para=200
 let mutluluk=70
 let ordu=80
-let cevre=80
 let nufus=1000000
 let vergi=10
 let sehir=1
-let toprak=1
 let uzay=0
 let tur=1
-
-let enemyArmy=[60,70,65,60,75,90,50,80,100]
+let toprak=1
+let electionWin=true
 
 let countries=[
-"🇫🇷 Fransa",
-"🇩🇪 Almanya",
-"🇮🇹 İtalya",
-"🇪🇸 İspanya",
-"🇬🇧 İngiltere",
-"🇷🇺 Rusya",
-"🇬🇷 Yunanistan",
-"🇮🇷 İran",
-"🇨🇳 Çin"
+"ABD","Fransa","Almanya","İtalya","İspanya","İngiltere","Rusya","Çin","Japonya","Kore",
+"Hindistan","Pakistan","İran","Irak","Suriye","Yunanistan","Brezilya","Arjantin","Meksika","Kanada",
+"Norveç","İsveç","Finlandiya","Polonya","Ukrayna","Romanya","Bulgaristan","Sırbistan","Macaristan","Avusturya",
+"Hollanda","Belçika","İsviçre","Portekiz","Fas","Cezayir","Mısır","Suudi","BAE","Katar",
+"Endonezya","Tayland","Vietnam","Malezya","Filipinler","Avustralya","Yeni Zelanda","G.Afrika","Nijerya","Kenya"
 ]
 
-let conquered=[false,false,false,false,false,false,false,false,false]
+let enemyArmy=[]
+let conquered=[]
 
-let electionWin=true
+for(let i=0;i<countries.length;i++){
+enemyArmy.push(40+Math.floor(Math.random()*80))
+conquered.push(false)
+}
+
+function createMap(){
+
+let map=document.getElementById("map")
+
+for(let i=0;i<countries.length;i++){
+
+let div=document.createElement("div")
+
+div.className="country enemy"
+div.id="c"+i
+
+div.innerHTML="🏳 "+countries[i]
+
+div.onclick=function(){attack(i)}
+
+map.appendChild(div)
+
+}
+
+}
 
 function goster(){
 
@@ -175,13 +222,9 @@ document.getElementById("stats").innerHTML=
 "Tur: "+tur+"<br>"+
 "💰 Para: "+para+"<br>"+
 "😊 Mutluluk: "+mutluluk+"<br>"+
-"🛡 Ordu: "+ordu+"<br>"+
-"🌱 Çevre: "+cevre+"<br>"+
+"🪖 Ordu: "+ordu+"<br>"+
 "👥 Nüfus: "+nufus+"<br>"+
-"🏙 Şehir: "+sehir+"<br>"+
-"🌍 Toprak: "+toprak+"<br>"+
-"🛰 Uzay: "+uzay+"<br>"+
-"💵 Vergi: %"+vergi
+"🌍 Toprak: "+toprak
 
 }
 
@@ -189,8 +232,55 @@ function event(text){
 document.getElementById("event").innerHTML=text
 }
 
-function gelir(){
-para+=Math.floor(nufus/100000)*vergi
+function newsSystem(){
+
+let r=Math.floor(Math.random()*100)
+
+if(r<40){
+
+let a=Math.floor(Math.random()*countries.length)
+let b=Math.floor(Math.random()*countries.length)
+
+if(a!=b){
+
+event("📰 SON DAKİKA: "+countries[a]+" ile "+countries[b]+" arasında savaş çıktı!")
+
+}
+
+}
+
+}
+
+function aiAttack(){
+
+let r=Math.floor(Math.random()*100)
+
+if(r<30){
+
+let enemy=Math.floor(Math.random()*countries.length)
+
+if(!conquered[enemy]){
+
+if(enemyArmy[enemy]>ordu){
+
+event("⚔️ "+countries[enemy]+" sana saldırdı!")
+
+mutluluk-=10
+para-=30
+ordu-=10
+
+}else{
+
+event("🛡 "+countries[enemy]+" saldırdı ama savundun!")
+
+ordu-=5
+
+}
+
+}
+
+}
+
 }
 
 function election(){
@@ -200,8 +290,10 @@ let rakip=100-oy
 
 document.getElementById("electionScreen").style.display="block"
 
-document.getElementById("voteResult").innerHTML=
-"Sen: %"+oy+"<br>Rakip: %"+rakip
+document.getElementById("playerBar").style.height=oy*3+"px"
+document.getElementById("enemyBar").style.height=rakip*3+"px"
+
+document.getElementById("voteText").innerHTML="Sen %"+oy+" | Rakip %"+rakip
 
 if(oy>=rakip){
 electionWin=true
@@ -222,118 +314,17 @@ location.reload()
 
 }
 
-function aiAttack(){
-
-let r=Math.floor(Math.random()*100)
-
-if(r<35){
-
-let enemy=Math.floor(Math.random()*enemyArmy.length)
-
-if(!conquered[enemy]){
-
-if(enemyArmy[enemy]>ordu){
-
-event("⚔️ "+countries[enemy]+" sana saldırdı ve kazandı!")
-
-mutluluk-=10
-para-=40
-ordu-=15
-
-}else{
-
-event("🛡 "+countries[enemy]+" sana saldırdı ama savundun!")
-
-ordu-=5
-
-}
-
-}
-
-}
-
-}
-
 function nextTurn(){
-
-gelir()
-
-if(mutluluk>70) nufus+=20000
-if(mutluluk<40) nufus-=20000
 
 tur++
 
+para+=Math.floor(nufus/100000)*vergi
+
 aiAttack()
+newsSystem()
 
-if(tur%5===0){
+if(tur%5==0){
 election()
-}
-
-goster()
-
-}
-
-function factory(){
-para+=40
-cevre-=10
-mutluluk+=3
-nextTurn()
-}
-
-function school(){
-para-=30
-mutluluk+=15
-nextTurn()
-}
-
-function army(){
-para-=40
-ordu+=30
-nextTurn()
-}
-
-function nature(){
-para-=20
-cevre+=25
-mutluluk+=5
-nextTurn()
-}
-
-function taxUp(){
-vergi+=2
-mutluluk-=5
-goster()
-}
-
-function taxDown(){
-vergi-=2
-mutluluk+=5
-goster()
-}
-
-function city(){
-
-if(para>=80){
-para-=80
-sehir++
-nufus+=120000
-event("Yeni şehir kuruldu")
-}else{
-event("Para yetmiyor")
-}
-
-goster()
-
-}
-
-function space(){
-
-if(para>=120){
-para-=120
-uzay++
-event("Uzay programı ilerledi")
-}else{
-event("Para yetmiyor")
 }
 
 goster()
@@ -349,23 +340,23 @@ return
 
 if(ordu>enemyArmy[i]){
 
-event("⚔️ Savaşı kazandın!")
+event("⚔️ "+countries[i]+" fethedildi!")
 
 toprak++
+para+=50
 ordu-=10
-para+=60
 
 conquered[i]=true
 
-let countriesHTML=document.querySelectorAll(".enemy")
+let country=document.getElementById("c"+i)
 
-countriesHTML[i].innerHTML="🇹🇷 Türkiye"
-countriesHTML[i].classList.remove("enemy")
-countriesHTML[i].classList.add("player")
+country.innerHTML="🇹🇷 Türkiye"
+country.classList.remove("enemy")
+country.classList.add("player")
 
 }else{
 
-event("⚔️ Savaşı kaybettin!")
+event("⚔️ "+countries[i]+" savaşını kaybettin!")
 
 ordu-=15
 mutluluk-=10
@@ -376,10 +367,47 @@ goster()
 
 }
 
+function factory(){para+=40;mutluluk+=2;nextTurn()}
+function school(){para-=20;mutluluk+=10;nextTurn()}
+function armyUp(){para-=30;ordu+=25;nextTurn()}
+function nature(){para-=20;mutluluk+=5;nextTurn()}
+
+function taxUp(){vergi+=2;mutluluk-=5;goster()}
+function taxDown(){vergi-=2;mutluluk+=5;goster()}
+
+function city(){
+
+if(para>=80){
+para-=80
+sehir++
+nufus+=120000
+event("Yeni şehir kuruldu!")
+}else{
+event("Yeterli para yok")
+}
+
+goster()
+
+}
+
+function space(){
+
+if(para>=120){
+para-=120
+uzay++
+event("Uzay programı ilerledi!")
+}else{
+event("Para yetmiyor")
+}
+
+goster()
+
+}
+
 function save(){
 
 localStorage.setItem("devletsim",JSON.stringify({
-para,mutluluk,ordu,cevre,nufus,vergi,sehir,toprak,uzay,tur
+para,mutluluk,ordu,nufus,vergi,sehir,uzay,tur,toprak
 }))
 
 event("Oyun kaydedildi")
@@ -395,13 +423,12 @@ if(data){
 para=data.para
 mutluluk=data.mutluluk
 ordu=data.ordu
-cevre=data.cevre
 nufus=data.nufus
 vergi=data.vergi
 sehir=data.sehir
-toprak=data.toprak
 uzay=data.uzay
 tur=data.tur
+toprak=data.toprak
 
 event("Oyun yüklendi")
 
@@ -411,6 +438,7 @@ goster()
 
 }
 
+createMap()
 goster()
 
 </script>
