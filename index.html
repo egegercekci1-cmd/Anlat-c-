@@ -13,10 +13,6 @@ color:white;
 text-align:center;
 }
 
-h1{
-font-size:45px;
-}
-
 #stats{
 background:#1e293b;
 padding:20px;
@@ -26,19 +22,26 @@ border-radius:10px;
 font-size:20px;
 }
 
-button{
-font-size:18px;
-padding:12px;
-margin:5px;
-border:none;
-border-radius:8px;
-cursor:pointer;
-width:170px;
+/* BUTON PANELİ */
+
+.controls{
+display:grid;
+grid-template-columns:repeat(3,200px);
+gap:12px;
+justify-content:center;
+margin-top:20px;
 }
 
-button:hover{
-transform:scale(1.05);
+button{
+font-size:20px;
+padding:15px;
+border:none;
+border-radius:10px;
+cursor:pointer;
+width:200px;
 }
+
+/* HARİTA */
 
 .map{
 display:grid;
@@ -56,20 +59,15 @@ cursor:pointer;
 font-size:13px;
 }
 
-.enemy{
-background:#ef4444;
-}
-
-.player{
-background:#22c55e;
-}
+.enemy{background:#ef4444;}
+.player{background:#22c55e;}
 
 #event{
 margin-top:20px;
 font-size:20px;
 }
 
-/* seçim ekranı */
+/* SEÇİM EKRANI */
 
 #electionScreen{
 display:none;
@@ -79,22 +77,14 @@ left:0;
 width:100%;
 height:100%;
 background:#000000dd;
-color:white;
-text-align:center;
 padding-top:120px;
 }
 
 .chart{
 display:flex;
 justify-content:center;
-gap:120px;
-margin-top:50px;
-}
-
-.barBox{
-display:flex;
-flex-direction:column;
-align-items:center;
+gap:60px;
+margin-top:40px;
 }
 
 .bar{
@@ -104,12 +94,16 @@ border-radius:10px;
 transition:1s;
 }
 
-.playerBar{
-background:#22c55e;
-}
+.reform{background:#3b82f6;}
+.halk{background:#22c55e;}
+.guc{background:#ef4444;}
 
-.enemyBar{
-background:#ef4444;
+/* EKONOMİ GRAFİĞİ */
+
+canvas{
+background:#1e293b;
+border-radius:10px;
+margin-top:20px;
 }
 
 </style>
@@ -122,16 +116,23 @@ background:#ef4444;
 
 <div id="stats"></div>
 
+<div class="controls">
+
 <button onclick="factory()">🏭 Fabrika</button>
 <button onclick="school()">🏫 Okul</button>
 <button onclick="armyUp()">🪖 Ordu</button>
+
 <button onclick="nature()">🌱 Çevre</button>
 <button onclick="taxUp()">💰 Vergi +</button>
 <button onclick="taxDown()">💵 Vergi -</button>
+
 <button onclick="city()">🏙 Şehir</button>
 <button onclick="space()">🚀 Uzay</button>
 <button onclick="save()">💾 Kaydet</button>
+
 <button onclick="load()">📂 Yükle</button>
+
+</div>
 
 <h2>🗺 Dünya Haritası</h2>
 
@@ -139,7 +140,10 @@ background:#ef4444;
 
 <h3 id="event"></h3>
 
-<!-- seçim ekranı -->
+<h2>📊 Ekonomi Grafiği</h2>
+<canvas id="ecoChart" width="600" height="250"></canvas>
+
+<!-- SEÇİM -->
 
 <div id="electionScreen">
 
@@ -147,14 +151,19 @@ background:#ef4444;
 
 <div class="chart">
 
-<div class="barBox">
-<div id="playerBar" class="bar playerBar"></div>
-<p>Sen</p>
+<div>
+<div id="reformBar" class="bar reform"></div>
+<p>Reform Partisi</p>
 </div>
 
-<div class="barBox">
-<div id="enemyBar" class="bar enemyBar"></div>
-<p>Rakip</p>
+<div>
+<div id="halkBar" class="bar halk"></div>
+<p>Halk Partisi</p>
+</div>
+
+<div>
+<div id="gucBar" class="bar guc"></div>
+<p>Güç Partisi</p>
 </div>
 
 </div>
@@ -172,25 +181,22 @@ let mutluluk=70
 let ordu=80
 let nufus=1000000
 let vergi=10
-let sehir=1
-let uzay=0
 let tur=1
 let toprak=1
-let electionWin=true
 
-let countries=[
-"ABD","Fransa","Almanya","İtalya","İspanya","İngiltere","Rusya","Çin","Japonya","Kore",
+let ecoHistory=[para]
+
+let countries=["ABD","Fransa","Almanya","İtalya","İspanya","İngiltere","Rusya","Çin","Japonya","Kore",
 "Hindistan","Pakistan","İran","Irak","Suriye","Yunanistan","Brezilya","Arjantin","Meksika","Kanada",
 "Norveç","İsveç","Finlandiya","Polonya","Ukrayna","Romanya","Bulgaristan","Sırbistan","Macaristan","Avusturya",
 "Hollanda","Belçika","İsviçre","Portekiz","Fas","Cezayir","Mısır","Suudi","BAE","Katar",
-"Endonezya","Tayland","Vietnam","Malezya","Filipinler","Avustralya","Yeni Zelanda","G.Afrika","Nijerya","Kenya"
-]
+"Endonezya","Tayland","Vietnam","Malezya","Filipinler","Avustralya","Yeni Zelanda","G.Afrika","Nijerya","Kenya"]
 
 let enemyArmy=[]
 let conquered=[]
 
 for(let i=0;i<countries.length;i++){
-enemyArmy.push(40+Math.floor(Math.random()*80))
+enemyArmy.push(40+Math.random()*80)
 conquered.push(false)
 }
 
@@ -198,20 +204,17 @@ function createMap(){
 
 let map=document.getElementById("map")
 
-for(let i=0;i<countries.length;i++){
+countries.forEach((c,i)=>{
 
 let div=document.createElement("div")
-
 div.className="country enemy"
 div.id="c"+i
-
-div.innerHTML="🏳 "+countries[i]
-
-div.onclick=function(){attack(i)}
+div.innerHTML="🏳 "+c
+div.onclick=()=>attack(i)
 
 map.appendChild(div)
 
-}
+})
 
 }
 
@@ -228,90 +231,53 @@ document.getElementById("stats").innerHTML=
 
 }
 
-function event(text){
-document.getElementById("event").innerHTML=text
+function event(t){
+document.getElementById("event").innerHTML=t
 }
 
-function newsSystem(){
+function drawGraph(){
 
-let r=Math.floor(Math.random()*100)
+let c=document.getElementById("ecoChart")
+let ctx=c.getContext("2d")
 
-if(r<40){
+ctx.clearRect(0,0,600,250)
 
-let a=Math.floor(Math.random()*countries.length)
-let b=Math.floor(Math.random()*countries.length)
+ctx.beginPath()
 
-if(a!=b){
+ecoHistory.forEach((v,i)=>{
 
-event("📰 SON DAKİKA: "+countries[a]+" ile "+countries[b]+" arasında savaş çıktı!")
+let x=i*30
+let y=250-v
 
-}
+if(i==0){ctx.moveTo(x,y)}
+else{ctx.lineTo(x,y)}
 
-}
+})
 
-}
-
-function aiAttack(){
-
-let r=Math.floor(Math.random()*100)
-
-if(r<30){
-
-let enemy=Math.floor(Math.random()*countries.length)
-
-if(!conquered[enemy]){
-
-if(enemyArmy[enemy]>ordu){
-
-event("⚔️ "+countries[enemy]+" sana saldırdı!")
-
-mutluluk-=10
-para-=30
-ordu-=10
-
-}else{
-
-event("🛡 "+countries[enemy]+" saldırdı ama savundun!")
-
-ordu-=5
-
-}
-
-}
-
-}
+ctx.strokeStyle="lime"
+ctx.stroke()
 
 }
 
 function election(){
 
-let oy=mutluluk+Math.floor(Math.random()*20)
-let rakip=100-oy
+let reform=Math.floor(Math.random()*40)+mutluluk/2
+let halk=Math.floor(Math.random()*40)
+let guc=Math.floor(Math.random()*40)
 
 document.getElementById("electionScreen").style.display="block"
 
-document.getElementById("playerBar").style.height=oy*3+"px"
-document.getElementById("enemyBar").style.height=rakip*3+"px"
+document.getElementById("reformBar").style.height=reform*3+"px"
+document.getElementById("halkBar").style.height=halk*3+"px"
+document.getElementById("gucBar").style.height=guc*3+"px"
 
-document.getElementById("voteText").innerHTML="Sen %"+oy+" | Rakip %"+rakip
-
-if(oy>=rakip){
-electionWin=true
-}else{
-electionWin=false
-}
+document.getElementById("voteText").innerHTML=
+"Reform:"+reform+" Halk:"+halk+" Güç:"+guc
 
 }
 
 function closeElection(){
-
 document.getElementById("electionScreen").style.display="none"
-
-if(!electionWin){
-alert("Seçimi kaybettin!")
-location.reload()
-}
-
 }
 
 function nextTurn(){
@@ -320,8 +286,9 @@ tur++
 
 para+=Math.floor(nufus/100000)*vergi
 
-aiAttack()
-newsSystem()
+ecoHistory.push(para)
+
+drawGraph()
 
 if(tur%5==0){
 election()
@@ -333,14 +300,11 @@ goster()
 
 function attack(i){
 
-if(conquered[i]){
-event("Bu ülkeyi zaten fethettin")
-return
-}
+if(conquered[i]) return
 
 if(ordu>enemyArmy[i]){
 
-event("⚔️ "+countries[i]+" fethedildi!")
+event(countries[i]+" fethedildi")
 
 toprak++
 para+=50
@@ -348,16 +312,14 @@ ordu-=10
 
 conquered[i]=true
 
-let country=document.getElementById("c"+i)
-
-country.innerHTML="🇹🇷 Türkiye"
-country.classList.remove("enemy")
-country.classList.add("player")
+let d=document.getElementById("c"+i)
+d.innerHTML="🇹🇷 Türkiye"
+d.classList.remove("enemy")
+d.classList.add("player")
 
 }else{
 
-event("⚔️ "+countries[i]+" savaşını kaybettin!")
-
+event("Savaş kaybedildi")
 ordu-=15
 mutluluk-=10
 
@@ -367,7 +329,7 @@ goster()
 
 }
 
-function factory(){para+=40;mutluluk+=2;nextTurn()}
+function factory(){para+=40;nextTurn()}
 function school(){para-=20;mutluluk+=10;nextTurn()}
 function armyUp(){para-=30;ordu+=25;nextTurn()}
 function nature(){para-=20;mutluluk+=5;nextTurn()}
@@ -375,63 +337,29 @@ function nature(){para-=20;mutluluk+=5;nextTurn()}
 function taxUp(){vergi+=2;mutluluk-=5;goster()}
 function taxDown(){vergi-=2;mutluluk+=5;goster()}
 
-function city(){
-
-if(para>=80){
-para-=80
-sehir++
-nufus+=120000
-event("Yeni şehir kuruldu!")
-}else{
-event("Yeterli para yok")
-}
-
-goster()
-
-}
-
-function space(){
-
-if(para>=120){
-para-=120
-uzay++
-event("Uzay programı ilerledi!")
-}else{
-event("Para yetmiyor")
-}
-
-goster()
-
-}
+function city(){para-=80;nufus+=120000;nextTurn()}
+function space(){para-=120;nextTurn()}
 
 function save(){
 
 localStorage.setItem("devletsim",JSON.stringify({
-para,mutluluk,ordu,nufus,vergi,sehir,uzay,tur,toprak
+para,mutluluk,ordu,nufus,vergi,tur,toprak
 }))
-
-event("Oyun kaydedildi")
 
 }
 
 function load(){
 
-let data=JSON.parse(localStorage.getItem("devletsim"))
+let d=JSON.parse(localStorage.getItem("devletsim"))
 
-if(data){
-
-para=data.para
-mutluluk=data.mutluluk
-ordu=data.ordu
-nufus=data.nufus
-vergi=data.vergi
-sehir=data.sehir
-uzay=data.uzay
-tur=data.tur
-toprak=data.toprak
-
-event("Oyun yüklendi")
-
+if(d){
+para=d.para
+mutluluk=d.mutluluk
+ordu=d.ordu
+nufus=d.nufus
+vergi=d.vergi
+tur=d.tur
+toprak=d.toprak
 }
 
 goster()
@@ -440,6 +368,7 @@ goster()
 
 createMap()
 goster()
+drawGraph()
 
 </script>
 
