@@ -206,7 +206,9 @@ transform: scale(0.9);
 </div>
 <div class="inventory-bar" id="inventoryBar">ÇANTAN: [ Boş ]</div>
 <div class="screen-area" id="storyText">Oyun başlatılıyor...</div>
-<div class="choices-area" id="choicesArea"></div>
+<div class="choices-area" id="choicesArea">
+<button class="choice-btn" onclick="renderScene('start')">▶️ Oyuna Başla / Devam Et</button>
+</div>
 </div>
 <script>
 let inventory = [];
@@ -377,7 +379,7 @@ action: () => {
 if(!inventory.includes("Hakim Suçüstü")) inventory.push("Hakim Suçüstü");
 },
 choices: [
-{ text: "⚖️ Jandarmayı çağır ve Hakim'elic teslim et (Mutlu Son)", next: "son_resmi_adalet" },
+{ text: "⚖️ Jandarmayı çağır ve Hakim'i adalete teslim et (Mutlu Son)", next: "son_resmi_adalet" },
 { text: "🗡️ Fabrikaya gidip tüm ekiple büyük hesaplaşmayı yap", next: "fabrika_baskin_giris" }
 ]
 },
@@ -440,10 +442,6 @@ choicesArea.appendChild(btn);
 });
 }
 }
-// Sayfa yüklenir yüklenmez oyunu başlat
-window.onload = () => {
-renderScene("start");
-};
 </script>
 </body>
 </html>
