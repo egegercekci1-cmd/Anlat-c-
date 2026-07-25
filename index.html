@@ -3,12 +3,23 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Ege Gizemi - Derinlemesine Psikolojik Roman</title>
+<title>Ege Gizemi - Noir Dedektif Sürümü</title>
 <style>
+:root {
+--bg-color: #0c0f0e;
+--container-bg: #131a16;
+--border-color: #243328;
+--accent-green: #34d399;
+--accent-gold: #fbbf24;
+--text-main: #e2e8f0;
+--text-muted: #94a3b8;
+--btn-bg: #1c2820;
+--btn-hover: #293b2f;
+}
 body {
 margin: 0;
-background: #0d120f;
-color: #d1d8d3;
+background: var(--bg-color);
+color: var(--text-main);
 font-family: 'Georgia', serif;
 display: flex;
 flex-direction: column;
@@ -20,48 +31,83 @@ box-sizing: border-box;
 }
 .game-container {
 width: 100%;
-max-width: 600px;
-background: #141c17;
-border: 2px solid #28362c;
-border-radius: 12px;
-box-shadow: 0 25px 50px rgba(0,0,0,0.9);
+max-width: 650px;
+background: var(--container-bg);
+border: 2px solid var(--border-color);
+border-radius: 16px;
+box-shadow: 0 25px 60px rgba(0,0,0,0.85);
 overflow: hidden;
+display: flex;
+flex-direction: column;
+position: relative;
+}
+/* Tasarım İyileştirmeleri: Üst Panel */
+.top-panel {
+background: #17211b;
+border-bottom: 1px solid var(--border-color);
 display: flex;
 flex-direction: column;
 }
 .status-bar {
-background: #1b261f;
-padding: 14px 20px;
+padding: 12px 20px;
 display: flex;
 justify-content: space-between;
-font-size: 12px;
+font-size: 11px;
 font-family: 'Segoe UI', Tahoma, sans-serif;
 font-weight: bold;
-border-bottom: 1px solid #28362c;
-color: #6ee7b7;
+color: var(--accent-green);
 letter-spacing: 1.5px;
+text-transform: uppercase;
+}
+.audio-controls {
+padding: 8px 20px;
+background: #0f1411;
+display: flex;
+justify-content: space-between;
+align-items: center;
+font-size: 12px;
+font-family: 'Segoe UI', Tahoma, sans-serif;
+border-top: 1px solid #1f2b23;
+}
+.audio-btn {
+background: #243328;
+color: var(--accent-green);
+border: 1px solid var(--accent-green);
+padding: 4px 10px;
+border-radius: 4px;
+cursor: pointer;
+font-size: 11px;
+font-weight: bold;
+transition: all 0.2s;
+}
+.audio-btn:hover {
+background: var(--accent-green);
+color: #0c0f0e;
 }
 .inventory-bar {
-background: #0a0f0c;
+background: #0a0e0b;
 padding: 10px 20px;
 font-size: 12px;
-color: #fde047;
-border-bottom: 1px solid #28362c;
+color: var(--accent-gold);
+border-bottom: 1px solid var(--border-color);
 font-family: monospace;
+letter-spacing: 0.5px;
 }
+/* Hikaye Metin Alanı */
 .screen-area {
-padding: 30px;
-min-height: 240px;
+padding: 32px;
+min-height: 260px;
 display: flex;
 align-items: center;
 justify-content: center;
 text-align: justify;
 font-size: 16px;
-line-height: 1.9;
-color: #e5e7eb;
-border-bottom: 1px solid #28362c;
-background: radial-gradient(circle, #1a241e 0%, #141c17 100%);
+line-height: 1.95;
+color: #f1f5f9;
+border-bottom: 1px solid var(--border-color);
+background: radial-gradient(circle, #18231c 0%, #131a16 100%);
 }
+/* Seçim Alanı ve Butonlar */
 .choices-area {
 padding: 20px;
 display: flex;
@@ -70,135 +116,191 @@ gap: 12px;
 background: #0f1411;
 }
 .choice-btn {
-background: #1b261f;
-color: #f3f4f6;
-border: 1px solid #324438;
-padding: 15px;
-border-radius: 8px;
+background: var(--btn-bg);
+color: var(--text-main);
+border: 1px solid #2d3d32;
+padding: 15px 18px;
+border-radius: 10px;
 cursor: pointer;
 text-align: left;
 font-size: 14px;
 font-family: 'Segoe UI', Tahoma, sans-serif;
 transition: all 0.25s ease;
+box-shadow: 0 4px 6px rgba(0,0,0,0.2);
 }
 .choice-btn:hover {
-background: #25362c;
-border-color: #6ee7b7;
+background: var(--btn-hover);
+border-color: var(--accent-green);
 transform: translateY(-2px);
+box-shadow: 0 6px 12px rgba(52,211,153,0.15);
 }
 </style>
 </head>
 <body>
 <div class="game-container">
+<div class="top-panel">
 <div class="status-bar">
-<span id="chapterTitle">BÖLÜM 1</span>
-<span id="tensionMeter">ATMOSFER: AĞIR VE GİZEMLİ</span>
+<span id="chapterTitle">BÖLÜM 1: DÖNÜŞ</span>
+<span id="tensionMeter">ATMOSFER: GERİLİMLİ</span>
+</div>
+<div class="audio-controls">
+<span id="audioStatus">🔊 Seslendirme: Hazır</span>
+<div>
+<button class="audio-btn" onclick="togglePauseSpeech()">Durdur / Devam Et</button>
+<button class="audio-btn" onclick="replaySpeech()">Tekrar Dinle</button>
+</div>
+</div>
 </div>
 <div class="inventory-bar" id="inventoryBar">ÇANTAN: [ Boş ]</div>
 <div class="screen-area" id="storyText">
-Hikaye yükleniyor... Ses sistemi aktif ediliyor.
+Hikaye yükleniyor...
 </div>
 <div class="choices-area" id="choicesArea"></div>
 </div>
 <script>
 let inventory = [];
+let currentText = "";
+let isPaused = false;
 function speakText(text) {
+currentText = text;
 if ('speechSynthesis' in window) {
 window.speechSynthesis.cancel();
 let utterance = new SpeechSynthesisUtterance(text);
 utterance.lang = 'tr-TR';
-utterance.rate = 0.92; // Daha yavaş, sakin ve etkileyici okuma hızı
-utterance.pitch = 0.85; // Daha tok, derin ve sinematik ses tonu
+utterance.rate = 0.92;
+utterance.pitch = 0.85;
+utterance.onstart = () => { document.getElementById("audioStatus").innerText = "🔊 Seslendirme: Çalıyor..."; };
+utterance.onend = () => { document.getElementById("audioStatus").innerText = "🔈 Seslendirme: Tamamlandı"; };
 window.speechSynthesis.speak(utterance);
+}
+}
+function togglePauseSpeech() {
+if ('speechSynthesis' in window) {
+if (window.speechSynthesis.speaking) {
+if (isPaused) {
+window.speechSynthesis.resume();
+isPaused = false;
+document.getElementById("audioStatus").innerText = "🔊 Seslendirme: Çalıyor...";
+} else {
+window.speechSynthesis.pause();
+isPaused = true;
+document.getElementById("audioStatus").innerText = "⏸️ Seslendirme: Duraklatıldı";
+}
+}
+}
+}
+function replaySpeech() {
+if (currentText) {
+isPaused = false;
+speakText(currentText);
 }
 }
 const gameData = {
 start: {
-title: "BÖLÜM 1: KÖKLER VE TOZ",
-tension: "BOĞUCU SESSİZLİK",
-text: "Ağustos güneşinin Ege ovası üzerindeki kavurucu ve merhametsiz ağırlığı, taş sokaklara adeta kurşun gibi dökülüyor. Yıllardır unuttuğunu sandığın bu kasabaya, deden Ruhan Tonguç’un ölüm haberini alır almaz, içinde tarif edilemez bir suçluluk ve merak duygusuyla döndün. Dedeni sadece yaz tatillerinden, yüzünde zamanın kazıdığı derin çizgilerle cam kenarında sessizce kitap okuyan, gözlerinin arkasında ise asla çözemediğin sırlar saklayan yaşlı bir adam olarak hatırlıyorsun. Kasabanın girişindeki eski kahvehanenin önünden geçerken, ahşap sandalyelerde oturan yaşlıların bakışları aniden üzerine dikildi. Ne bir selam veren var ne de başını çeviren; sanki yıllar önce bu evden ayrılan o küçük çocuk değilmişsin de, kasabaya huzur bozmaya gelen yabancı bir ruhmuşsun gibi derin ve sorgulayıcı bir sessizlik hakim oldu.",
+title: "BÖLÜM 1: CİNAYET Mİ, KAZA MI?",
+tension: "BOĞUCU ŞÜPHE",
+text: "İzmir'in tarihi sokaklarından, taş evleri ve zeytinlikleriyle ünlü o kasabaya adım attığında üzerindeki dedektiflik kimliği omzuna ağır bir yük gibi bindi. Seni buraya çeken şey sadece deden Ruhan Tonguç’un ani ölümü değildi; yerel kolluk kuvvetlerinin 'yaşlılığa bağlı kalp krizi' olarak kapattığı raporun altındaki derin çelişkilerdi. Deden, yıllar önce kasabada işlenen ve asla çözülemeyen o meşhur 'Müftü Cinayeti' dosyasını yeniden açmak üzereydi. Kasaba meydanındaki kahvehanede oturanların bakışları seni delerken, dedenin ölüm gecesi evine kilitli bir mektup geldiğini öğrendin.",
 action: () => { inventory = []; },
 choices: [
-{ text: "Dedenin sana bıraktığı, zamanın sararttığı o eski taş eve doğru adımlarını hızlandır ve geçmişin tozlu koridorlarıyla yüzleş.", next: "tas_ev_giris" },
-{ text: "Kahvehanenin önüne yönelip, yüzünde her şeyi bilen ama hiçbir şey söylemeyen o ifadeden taviz vermeyen muhtarla yüzleş.", next: "muhtar_yuzlesme" }
+{ text: "Doğrudan dedenin eski evine git ve olay yerindeki adli delilleri, parmak izlerini ve gizli notları incele.", next: "olay_yeri" },
+{ text: "Kasabanın gizli kapaklı işlerini yürüten ve dedenin en büyük düşmanı olan Muhtar İsmail ile yüzleş.", next: "muhtar_sorgu" }
 ]
 },
-tas_ev_giris: {
-title: "BÖLÜM 2: DEDEMİN EVİ",
-tension: "İÇ GÜDÜSEL HUZURSUZLUK",
-text: "Eski taş evin ağır, kestane ağacından yapılmış kapısı, yılların verdiği nem ve gıcırtıyla aralandı. İçeride, dışarıdaki kavurucu sıcağın aksine, yıllanmış zeytinyağı, nemli toprak ve eski kağıtların harmanlandığı ağır, neredeyse nefes kesen bir koku karşıladı seni. Pencereler sıkıca kapalı olduğu için içeriye sızan tek ışık, panjurların arasından süzülen ince toz tanecikleriyle dans eden soluk bir çizgiydi. Salonun ortasındaki masanın üzerinde, dedenin el yazısıyla bırakılmış açık duran bir defter ve üzerinde pas lekesi olan ağır demir bir anahtar duruyor. Defterin sayfalarında, kasabanın haritası üzerinde işaretlenmiş anlaşılmaz matematiksel semboller ve latince notlar var. İçindeki bir ses, dedenin ölümünün arkasında sıradan bir yaşlılığın olmadığını fısıldıyor.",
+olay_yeri: {
+title: "BÖLÜM 2: ADLİ İNCELEME",
+tension: "DELİLLERİN DİLİ",
+text: "Dedenin taş evine girdiğinde, evin içerisinin birileri tarafından didik didik arandığını fark ettin. Kitaplıklar devrilmemiş ama kitapların sıralaması şifreli bir düzene göre değiştirilmişti. Çalışma masasının üzerinde, dedenin ölüm gecesi yazdığı son satırlar duruyor: 'Zehir, rapordaki gibi kalp krizini taklit ediyor. Katil kasabanın içinde, en güvendiğim yerde.' Masanın çekmecesinden dedenin eski polis not defteri ve olay gecesi camın kenarına düşmüş gümüş bir kol düğmesi çıktı.",
 action: () => {
-if(!inventory.includes("Demir Anahtar")) inventory.push("Demir Anahtar");
-if(!inventory.includes("Şifreli Defter")) inventory.push("Şifreli Defter");
+if(!inventory.includes("Polis Not Defteri")) inventory.path = inventory.push("Polis Not Defteri");
+if(!inventory.includes("Gümüş Kol Düğmesi")) inventory.push("Gümüş Kol Düğmesi");
 },
 choices: [
-{ text: "Defterdeki o tuhaf sembollerin ne anlama geldiğini anlamak için sayfaları incele ve dedenin zihninin derinliklerine in.", next: "defter_incele" },
-{ text: "Ağır demir anahtarı alıp, evin yıllardır kilitli duran ve içerisinden hafif bir rüzgar sesi gelen tavan arası merdivenlerine yönel.", next: "tavan_arasi_kesif" }
+{ text: "Not defterindeki ipuçlarını takip ederek Müftü cinayetiyle bu ölüm arasındaki bağı çözmeye çalış.", next: "arsiv_incele" },
+{ text: "Gümüş kol düğmesinin kime ait olduğunu bulmak için kasabanın kuyumcusuna veya ileri gelenlerine git.", next: "kol_dugmesi_takip" }
 ]
 },
-muhtar_yuzlesme: {
-title: "BÖLÜM 2: KAHVEHANEDEKİ GÖLGELER",
-tension: "GERİLİM TIRMANIYOR",
-text: "Adımlarını kahvehanenin tahta sehpalarına doğru yönelttin. Masada oturan kasabanın muhtarı İsmail Efendi, önündeki çay bardaklarıyla oynarken başını yavaşça kaldırdı. Gözlerinde ne bir şaşkınlık ne de bir hoş geldiniz pırıltısı vardı; aksine, yıllardır bu anı bekliyormuş gibi bir rahatsızlık sezdin. Sesini alçaltarak, 'Ruhan hoca, ölmeden hemen önce senin geleceğini biliyordu evlat,' dedi. 'Burası sıradan bir Ege kasabası değildir. Toprağın altında yatanlar, üstündekilerden daha çoktur. Dedenin sana bıraktığı o mirası arıyorsan, eski fabrikanın zeminindeki kilitli kapıyı açmadan önce iki kez düşün.' Muhtar sana üzerinde eski bir mühür olan ahşap bir jeton uzatıyor.",
+muhtar_sorgu: {
+title: "BÖLÜM 2: SORGUK ODASI SOKAĞI",
+tension: "TEHLİKELİ YÜZLEŞME",
+text: "Muhtar İsmail'in evine habersiz gittiğinde, adamın yüzündeki o yapmacık taziye gülümsemesi hemen soldu. Karşında, kasabada unuttuğunu sandığın o karanlık mafyatik yapının izleri duruyordu. İsmail, masaya ağır bir kahve fincanı bırakırken soğuk bir sesle konuştu: 'Deden çok fazla kurcalıyordu delikanlı. Yıllar önceki cinayeti ve fabrikanın altındaki sırrı kurcalayanların sonu hep aynı bitmiştir. Fazla merak, Ege güneşinden daha çabuk yakar adamı.' Sana elindeki eski bir gazete kupürünü uzatıyor.",
 action: () => {
-if(!inventory.includes("Ahşap Mühürlü Jeton")) inventory.push("Ahşap Mühürlü Jeton");
+if(!inventory.includes("Eski Gazete Kupürü")) inventory.push("Eski Gazete Kupürü");
 },
 choices: [
-{ text: "Muhtarın uyarısını kulak arkası edip, dedenin sırlarla dolu geçmişini aydınlatmak için doğrudan eski fabrikanın yolunu tut.", next: "fabrika_karanlik" },
-{ text: "Muhtara teşekkür edip şüpheyle oradan uzaklaş ve dedenin evine dönerek ipuçlarını birleştir.", next: "tas_ev_giris" }
+{ text: "Muhtarın tehditlerine boyun eğmeyip onu cinayetle suçla ve dedenin intikamını almak için delil topla.", next: "arsiv_incele" },
+{ text: "Şimdilik sakin kalıp kasabanın eski zeytinyağı fabrikasına doğru gizlice yönel.", next: "fabrika_gece" }
 ]
 },
-defter_incele: {
-title: "BÖLÜM 3: ZİHNİN HARİTASI",
-tension: "PSİKOLOJİK DÖNÜŞÜM",
-text: "Defterin sayfalarını çevirdikçe, dedenin ne kadar yalnız ve takıntılı bir hayat sürdüğünü fark ediyorsun. Sayfalarda sık sık Ege tıp fakültesindeki gençlik yıllarına ve Atatürk lisesi dönemindeki bilimsel deneylerine atıflar var. Deden, sıradan bir emekli öğretmen değil, kasabanın yeraltı su yolları ve tarihe karışmış gizli bir tıbbi formül üzerine kafa yoran bir dahiymiş. Sayfanın kenarına şöyle yazmış: 'Gerçeği arayan insan, kendi karanlığıyla yüzleşmeye cesaret etmelidir.' Bu cümle zihninde yankılanırken, evdeki tahta döşemelerin altından hafif bir tıkırtı sesi geliyor.",
+arsiv_incele: {
+title: "BÖLÜM 3: DOSYA KAPANMIYOR",
+tension: "GERÇEĞE YAKLAŞIRKEN",
+text: "Topladığın gümüş kol düğmesi, eski gazete kupürü ve dedenin not defterini birleştirdiğinde şok edici gerçeğe ulaşıyorsun. Müftü cinayetini işleyen kişi ile dedeni zehirleyen katil aynı kişiydi: Kasabanın saygın görünen eski savcısı, şimdi ise hakim olan kişi! Deden, adamın yıllar önce işlediği suçu kanıtlayan ana delili eski zeytinyağı fabrikasının altındaki kasada saklıyordu. Artık elinde katilin kimliği var, ancak katil senin bu bilgilere ulaştığını öğrendi.",
 action: () => {
-if(!inventory.includes("Tıp Notları")) inventory.push("Tıp Notları");
+if(!inventory.includes("Katilin Kimliği")) inventory.push("Katilin Kimliği");
 },
 choices: [
-{ text: "Zeminden gelen tıkırtının sebebini bulmak için halıyı kaldır ve tahtaları incele.", next: "zemin_alti" },
-{ text: "Zaman kaybetmeden demir anahtarla tavan arasına çık ve asıl büyük sırrı ara.", next: "tavan_arasi_kesif" }
+{ text: "Doğrudan jandarmaya gidip hakimi tutuklatmak için resmi işlem başlat.", next: "son_resmi_adalet" },
+{ text: "Adaleti kendi ellerine alıp katille eski fabrikada yüzleşmek için tuzağa doğru git.", next: "son_intikam_tuzagi" },
+{ text: "Elindeki delilleri ifşa etmek yerine şantaj yapıp kasabadan kaçmaya çalış.", next: "son_kacis_ve_ihanet" },
+{ text: "Gerçeği unutup kasabayı terk et, bazı sırlar toprağın altında kalmalıdır.", next: "son_korkak_kacis" }
 ]
 },
-tavan_arasi_kesif: {
-title: "BÖLÜM 3: TAVAN ARASININ SIRRI",
-tension: "NEFES KESİCİ",
-text: "Demir anahtar kilide girdiğinde çıkardığı metalik ses, evdeki sessizliği bıçak gibi kesti. Tavan arasına çıktığında, burnuna ağır bir naftalin ve eski deri kokusu çarptı. Odanın tam ortasında, üzerinde mumlar ve dedenin gençlik fotoğraflarının bulunduğu büyük bir masa duruyor. Fotoğraflarda dedenin yanında, yüzü yırtılmış gizemli bir insan silüeti var. Masanın çekmecesini açtığında, kasabanın altındaki eski zeytinyağı fabrikasına inen gizli bir asansörün mekanik kumanda kolunu buluyorsun. Artık her şey birbiriyle bağlanıyor.",
+kol_dugmesi_takip: {
+title: "BÖLÜM 3: İZ SÜRME",
+tension: "TAKİPTEYKEN",
+text: "Gümüş kol düğmesini kasabanın eski terzisine götürdüğünde, terzi elleri titreyerek bunun kasabanın en yetkili ismine, yani Hakime ait özel bir dikim takımının parçası olduğunu itiraf ediyor. Deden, Hakim'in yıllar önceki cinayeti örtbas ettiğini kanıtlayan son kişiydi. Bu yüzden susturuldu.",
 action: () => {
-if(!inventory.includes("Mekanik Kumanda Kolu")) inventory.push("Mekanik Kumanda Kolu");
+if(!inventory.includes("Terzi İtirafı")) inventory.push("Terzi İtirafı");
 },
 choices: [
-{ text: "Kumanda kolunu yanına al ve kasabanın kalbindeki o eski, karanlık zeytinyağı fabrikasına doğru yürümeye başla.", next: "fabrika_karanlik" }
+{ text: "Delilleri birleştirip nihai kararı vermek üzere eski fabrikadaki gizli odaya in.", next: "fabrika_gece" }
 ]
 },
-zemin_alti: {
-title: "BÖLÜM 3: GİZLİ BÖLME",
-tension: "YALNIZLIK HİSSİ",
-text: "Taş evin salonundaki halıyı kenara çekip meşe tahtasını kaldırdığında, içeriye doğru inen dar ve karanlık merdivenlerle karşılaşıyorsun. Burası kimsenin bilmediği, dedenin laboratuvar olarak kullandığı gizli bir sığınak. Duvarlarda eski anatomi çizimleri, insan zihni üzerine yazılmış latince makaleler ve odanın ortasında duran cam kavanozlar içinde korunan eski bitki örnekleri var. Deden burada insan hafızasını koruyacak bir formül üzerinde çalışıyormuş. Bu keşif seni hem ürkütüyor hem de dedene karşı duyduğun bağı sonsuzlaştırıyor.",
-action: () => {
-if(!inventory.includes("Hafıza Formülü")) inventory.push("Hafıza Formülü");
-},
-choices: [
-{ text: "Sığınağın arkasındaki tünelden geçerek eski fabrikanın alt katına ulaş.", next: "fabrika_karanlik" }
-]
-},
-fabrika_karanlik: {
-title: "BÖLÜM 4: FABRİKANIN DERİNLİKLERİ",
-tension: "ZİRVE GERİLİM",
-text: "Eski zeytinyağı fabrikasının devasa demir kapısı, içeriden gelen esintiyle hafifçe aralandı. İçerisi zifiri karanlık ve katran kokuyor. Elindeki kumanda kolu ve mühürlü jetonla fabrikanın alt katına inen asansörün önüne geldin. Mekanizma paslı olsa da çalışmaya başladı. Asansör gıcırtılar eşliğinde yerin metrelerce altına inerken, içindeki o yalnızlık hissi doruğa ulaşıyor. Aşağıda seni bekleyen şeyin sadece eski bir aile mirası değil, insanlığın hafızasını değiştirecek büyük bir sır olduğunu biliyorsun. Kapı açılıyor...",
+fabrika_gece: {
+title: "BÖLÜM 3: FABRİKANIN GÖLGELERİ",
+tension: "ÖLÜMCÜL TUZAK",
+text: "Zeytinyağı fabrikasının paslı demir kapısından içeri girdiğinde arkandan kapının kilitlenme sesini duydun. Karanlığın içinden gelen sakin ve yankılı bir ses duyuldu: 'Dedende çok akıllıydı ama ölümün nerede aranacağını bilemedi.' Hakim, elinde silahla karanlıktan çıkıp karşına dikildi. Artık ölüm kalım savaşındasın.",
 action: () => {},
 choices: [
-{ text: "Karanlığın içine adım at ve dedenin bıraktığı o nihai mirasla yüzleşerek kaderini mühürle.", next: "mutlak_final" }
+{ text: "Hızlı bir hamleyle fabrikanın ana şalterini indirip karanlıkta üstünlüğü ele geçir.", next: "son_taktik_zafer" },
+{ text: "Hakim'in konuşmasını uzatıp gizlice jandarmayı aradığını söyleyerek dikkatini dağıt.", next: "son_resmi_adalet" }
 ]
 },
-mutlak_final: {
-title: "FİNAL: DEDEMİN MİRASI",
-tension: "HUZURLU AYDINLANMA",
-text: "Asansörün açıldığı devasa yeraltı salonunda, binlerce eski kitap, tıp arşivi ve kasabanın tüm geçmişini barındıran belgeler ışıklar altında parlıyor. Masanın üzerinde dedenin son bir mektubu duruyor: 'Sevgili torunum, gerçek miras ne para ne de mülktür; gerçeği arama cesaretidir. Sen bu yola girerek sadece benim değil, kendi ruhunun da kilidini açtın.' Kasabanın üzerindeki o ağır, kasvetli sis bir anda dağılıyor. Sen artık sadece Ruhan Tonguç’un torunu değil, bu kasabanın yeni koruyucususun. Oyunu kazandın ve karakterinle tamamen bütünleştin.",
+/* ALTERNATİF SONLAR */
+son_resmi_adalet: {
+title: "ALTERNATİF SON I: ADALETİN ZAFERİ",
+tension: "HUZURLU HAKİKAT",
+text: "Topladığın deliller ve terzi ifadesiyle jandarmayı harekete geçirdin. Hakim ve suç ortakları suçüstü yakalanarak tutuklandı. Dedenin ruhu nihayet huzura erdi. Sen ise kasabadan ayrılırken sıradan bir ziyaretçi değil, gerçeği gün ışığına çıkaran efsanevi bir dedektif olarak hatırlandın. Oyunu kazandın!",
 action: () => {},
-choices: [
-{ text: "🔄 Hikayeyi Baştan Yaşa", next: "start" }
-]
+choices: [{ text: "🔄 Hikayeyi Baştan Yaşa", next: "start" }]
+},
+son_intikam_tuzagi: {
+title: "ALTERNATİF SON II: GÖZE GÖZ",
+tension: "KARANLIK ADALET",
+text: "Resmi makamların yavaş işleyen adaletine güvenmeyip mahkemeyi kendi ellerinde kurdun. Fabrikanın derinliklerinde katille yüzleşip adaleti sağladın, ancak bu karanlık yol senin de ruhunda silinmez izler bıraktı. Artık sen de bu kasabanın karanlık efsanelerinden birisin. Oyunu tamamladın!",
+action: () => {},
+choices: [{ text: "🔄 Hikayeyi Baştan Yaşa", next: "start" }]
+},
+son_kacis_ve_ihanet: {
+title: "ALTERNATİF SON III: SESSİZ ORTAKLIK",
+tension: "YÜKSEK BEDEL",
+text: "Gerçeği açığa çıkarmak yerine güçlü insanlarla pazarlık masasına oturdun. Cebin para doldu belki ama dedenin kemikleri sızladı. Kasabadan ayrılırken arkana baktığında, ne bir gurur ne de bir adalet duygusu vardı; sadece suçluluk hissiyle baş başa kaldın. Oyunu bitirdin.",
+action: () => {},
+choices: [{ text: "🔄 Hikayeyi Baştan Yaşa", next: "start" }]
+},
+son_korkak_kacis: {
+title: "ALTERNATİF SON IV: UNUTULUŞ",
+tension: "PİŞMANLIK",
+text: "Gerçeklerle yüzleşmek sana çok ağır geldi. Her şeyi arkanda bırakıp ilk otobüsle kasabadan kaçtın. Dedenin ölümündeki sır ebediyen karanlığa gömüldü, kasaba ise kendi sessiz yalanlarıyla baş başa kaldı. Oyunu kaybettin.",
+action: () => {},
+choices: [{ text: "🔄 Hikayeyi Baştan Yaşa", next: "start" }]
+},
+son_taktik_zafer: {
+title: "ALTERNATİF SON V: TAKTİKSEL ÜSTÜNLÜK",
+tension: "ZAFİRE GİDEN YOL",
+text: "Karanlığı avantaja çevirip şalteri indirdin ve profesyonel reflekslerinle katili etkisiz hale getirip polise teslim ettin. Zekan sayesinde kasabanın en büyük karanlığını aydınlattın. Muazzam bir dedektiflik başarısı! Oyunu kazandın!",
+action: () => {},
+choices: [{ text: "🔄 Hikayeyi Baştan Yaşa", next: "start" }]
 }
 };
 function renderScene(sceneKey) {
