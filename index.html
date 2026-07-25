@@ -1,412 +1,318 @@
 <!DOCTYPE html>
-<html>
+<html lang="tr">
 <head>
-<meta charset="UTF-8">
-<title>DevletSim World</title>
-
-<style>
-
-body{
-font-family:Arial;
-background:#0f172a;
-color:white;
-text-align:center;
-}
-
-#stats{
-background:#1e293b;
-padding:20px;
-width:350px;
-margin:20px auto;
-border-radius:10px;
-font-size:20px;
-}
-
-.controls{
-display:grid;
-grid-template-columns:repeat(3,200px);
-gap:12px;
-justify-content:center;
-margin-top:20px;
-}
-
-button{
-font-size:18px;
-padding:12px;
-border:none;
-border-radius:10px;
-cursor:pointer;
-width:200px;
-}
-
-button:hover{
-transform:scale(1.05);
-}
-
-#event{
-margin-top:20px;
-font-size:20px;
-}
-
-/* HARİTA MENÜSÜ */
-
-#mapMenu{
-display:none;
-position:fixed;
-top:0;
-left:0;
-width:100%;
-height:100%;
-background:#020617;
-z-index:10;
-overflow:auto;
-}
-
-.bigMap{
-display:grid;
-grid-template-columns:repeat(10,140px);
-gap:10px;
-justify-content:center;
-margin-top:50px;
-}
-
-.bigCountry{
-background:#334155;
-padding:20px;
-border-radius:10px;
-cursor:pointer;
-font-size:16px;
-}
-
-.bigEnemy{
-background:#ef4444;
-}
-
-.bigPlayer{
-background:#22c55e;
-}
-
-/* SEÇİM */
-
-#electionScreen{
-display:none;
-position:fixed;
-top:0;
-left:0;
-width:100%;
-height:100%;
-background:#000000dd;
-padding-top:120px;
-}
-
-.chart{
-display:flex;
-justify-content:center;
-gap:60px;
-margin-top:40px;
-}
-
-.bar{
-width:90px;
-height:0px;
-border-radius:10px;
-transition:1s;
-}
-
-.reform{background:#3b82f6;}
-.halk{background:#22c55e;}
-.guc{background:#ef4444;}
-
-canvas{
-background:#1e293b;
-border-radius:10px;
-margin-top:20px;
-}
-
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Hata Veriyor - Genişletilmiş Sürüm</title>
+    <style>
+        body {
+            margin: 0;
+            background: #07070a;
+            color: #dcdce6;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 15px;
+            box-sizing: border-box;
+        }
+        .game-container {
+            width: 100%;
+            max-width: 500px;
+            background: #12121c;
+            border: 2px solid #252538;
+            border-radius: 14px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.9);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        .status-bar {
+            background: #1a1a29;
+            padding: 12px 18px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            font-weight: bold;
+            border-bottom: 1px solid #252538;
+            color: #ff3366;
+            letter-spacing: 1px;
+        }
+        .inventory-bar {
+            background: #0f0f17;
+            padding: 8px 18px;
+            font-size: 11px;
+            color: #00ffcc;
+            border-bottom: 1px solid #252538;
+            font-family: monospace;
+        }
+        .screen-area {
+            padding: 22px;
+            min-height: 160px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            font-size: 15px;
+            line-height: 1.6;
+            color: #f1f1f5;
+            border-bottom: 1px solid #252538;
+            background: radial-gradient(circle, #171724 0%, #12121c 100%);
+        }
+        .choices-area {
+            padding: 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            background: #0d0d14;
+        }
+        .choice-btn {
+            background: #1b1b2b;
+            color: #fff;
+            border: 1px solid #32324d;
+            padding: 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: left;
+            font-size: 13px;
+            transition: all 0.2s ease;
+        }
+        .choice-btn:hover {
+            background: #282842;
+            border-color: #ff3366;
+            transform: translateY(-2px);
+        }
+    </style>
 </head>
-
 <body>
 
-<h1>🌍 DevletSim World</h1>
-
-<div id="stats"></div>
-
-<div class="controls">
-
-<button onclick="factory()">🏭 Fabrika</button>
-<button onclick="school()">🏫 Okul</button>
-<button onclick="armyUp()">🪖 Ordu</button>
-
-<button onclick="nature()">🌱 Çevre</button>
-<button onclick="taxUp()">💰 Vergi +</button>
-<button onclick="taxDown()">💵 Vergi -</button>
-
-<button onclick="city()">🏙 Şehir</button>
-<button onclick="space()">🚀 Uzay</button>
-<button onclick="openMap()">🌍 Haritayı Aç</button>
-
-<button onclick="save()">💾 Kaydet</button>
-<button onclick="load()">📂 Yükle</button>
-
-</div>
-
-<h3 id="event"></h3>
-
-<h2>📊 Ekonomi Grafiği</h2>
-<canvas id="ecoChart" width="600" height="250"></canvas>
-
-<!-- HARİTA MENÜ -->
-
-<div id="mapMenu">
-
-<h1>🌍 Dünya Haritası</h1>
-
-<button onclick="closeMap()">Kapat</button>
-
-<div class="bigMap" id="bigMap"></div>
-
-</div>
-
-<!-- SEÇİM -->
-
-<div id="electionScreen">
-
-<h1>🗳 Seçim Sonuçları</h1>
-
-<div class="chart">
-
-<div>
-<div id="reformBar" class="bar reform"></div>
-<p>Reform Partisi</p>
-</div>
-
-<div>
-<div id="halkBar" class="bar halk"></div>
-<p>Halk Partisi</p>
-</div>
-
-<div>
-<div id="gucBar" class="bar guc"></div>
-<p>Güç Partisi</p>
-</div>
-
-</div>
-
-<h2 id="voteText"></h2>
-
-<button onclick="closeElection()">Devam</button>
-
-</div>
-
-<script>
-
-let para=200
-let mutluluk=70
-let ordu=80
-let nufus=1000000
-let vergi=10
-let tur=1
-let toprak=1
-
-let ecoHistory=[para]
-
-let countries=[
-"ABD","Fransa","Almanya","İtalya","İspanya","İngiltere","Rusya","Çin","Japonya","Kore",
-"Hindistan","Pakistan","İran","Irak","Suriye","Yunanistan","Brezilya","Arjantin","Meksika","Kanada",
-"Norveç","İsveç","Finlandiya","Polonya","Ukrayna","Romanya","Bulgaristan","Sırbistan","Macaristan","Avusturya",
-"Hollanda","Belçika","İsviçre","Portekiz","Fas","Cezayir","Mısır","Suudi","BAE","Katar",
-"Endonezya","Tayland","Vietnam","Malezya","Filipinler","Avustralya","Yeni Zelanda","G.Afrika","Nijerya","Kenya"
-]
-
-let enemyArmy=[]
-let conquered=[]
-
-for(let i=0;i<countries.length;i++){
-enemyArmy.push(40+Math.random()*80)
-conquered.push(false)
-}
-
-function createBigMap(){
-
-let map=document.getElementById("bigMap")
-
-countries.forEach((c,i)=>{
-
-let div=document.createElement("div")
-
-div.className="bigCountry bigEnemy"
-div.id="bc"+i
-div.innerHTML="🏳 "+c
-
-div.onclick=function(){attack(i)}
-
-map.appendChild(div)
-
-})
-
-}
-
-function openMap(){
-document.getElementById("mapMenu").style.display="block"
-}
-
-function closeMap(){
-document.getElementById("mapMenu").style.display="none"
-}
-
-function goster(){
-
-document.getElementById("stats").innerHTML=
-
-"Tur: "+tur+"<br>"+
-"💰 Para: "+para+"<br>"+
-"😊 Mutluluk: "+mutluluk+"<br>"+
-"🪖 Ordu: "+ordu+"<br>"+
-"👥 Nüfus: "+nufus+"<br>"+
-"🌍 Toprak: "+toprak
-
-}
-
-function event(t){
-document.getElementById("event").innerHTML=t
-}
-
-function drawGraph(){
-
-let c=document.getElementById("ecoChart")
-let ctx=c.getContext("2d")
-
-ctx.clearRect(0,0,600,250)
-
-ctx.beginPath()
-
-ecoHistory.forEach((v,i)=>{
-
-let x=i*30
-let y=250-v
-
-if(i==0) ctx.moveTo(x,y)
-else ctx.lineTo(x,y)
-
-})
-
-ctx.strokeStyle="lime"
-ctx.stroke()
-
-}
-
-function election(){
-
-let reform=Math.random()*40+mutluluk/2
-let halk=Math.random()*40
-let guc=Math.random()*40
-
-document.getElementById("electionScreen").style.display="block"
-
-document.getElementById("reformBar").style.height=reform*3+"px"
-document.getElementById("halkBar").style.height=halk*3+"px"
-document.getElementById("gucBar").style.height=guc*3+"px"
-
-document.getElementById("voteText").innerHTML=
-"Reform:"+Math.floor(reform)+" Halk:"+Math.floor(halk)+" Güç:"+Math.floor(guc)
-
-}
-
-function closeElection(){
-document.getElementById("electionScreen").style.display="none"
-}
-
-function nextTurn(){
-
-tur++
-
-para+=Math.floor(nufus/100000)*vergi
-
-ecoHistory.push(para)
-
-drawGraph()
-
-if(tur%5==0) election()
-
-goster()
-
-}
-
-function attack(i){
-
-if(conquered[i]) return
-
-if(ordu>enemyArmy[i]){
-
-event(countries[i]+" fethedildi")
-
-toprak++
-para+=50
-ordu-=10
-
-conquered[i]=true
-
-let d=document.getElementById("bc"+i)
-d.innerHTML="🇹🇷 Türkiye"
-d.classList.remove("bigEnemy")
-d.classList.add("bigPlayer")
-
-}else{
-
-event("Savaş kaybedildi")
-
-ordu-=15
-mutluluk-=10
-
-}
-
-goster()
-
-}
-
-function factory(){para+=40;nextTurn()}
-function school(){para-=20;mutluluk+=10;nextTurn()}
-function armyUp(){para-=30;ordu+=25;nextTurn()}
-function nature(){para-=20;mutluluk+=5;nextTurn()}
-
-function taxUp(){vergi+=2;mutluluk-=5;goster()}
-function taxDown(){vergi-=2;mutluluk+=5;goster()}
-
-function city(){para-=80;nufus+=120000;nextTurn()}
-function space(){para-=120;nextTurn()}
-
-function save(){
-
-localStorage.setItem("devletsim",JSON.stringify({
-para,mutluluk,ordu,nufus,vergi,tur,toprak
-}))
-
-}
-
-function load(){
-
-let d=JSON.parse(localStorage.getItem("devletsim"))
-
-if(d){
-para=d.para
-mutluluk=d.mutluluk
-ordu=d.ordu
-nufus=d.nufus
-vergi=d.vergi
-tur=d.tur
-toprak=d.toprak
-}
-
-goster()
-
-}
-
-createBigMap()
-goster()
-drawGraph()
-
-</script>
-
+    <div class="game-container">
+        <div class="status-bar">
+            <span id="chapterTitle">BÖLÜM 1</span>
+            <span id="tensionMeter">TANSİYON: YÜKSEK</span>
+        </div>
+        <div class="inventory-bar" id="inventoryBar">ENVANTER: [ Boş ]</div>
+        <div class="screen-area" id="storyText">
+            Hikaye yükleniyor...
+        </div>
+        <div class="choices-area" id="choicesArea"></div>
+    </div>
+
+    <script>
+        let audioCtx = null;
+        let inventory = [];
+
+        function initAudio() {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+
+        function playSound(type) {
+            initAudio();
+            if (!audioCtx) return;
+            let osc = audioCtx.createOscillator();
+            let gain = audioCtx.createGain();
+
+            if (type === "alarm") {
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(500, audioCtx.currentTime);
+                osc.frequency.setValueAtTime(800, audioCtx.currentTime + 0.1);
+                gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.25);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.25);
+            } else if (type === "screech") {
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(250, audioCtx.currentTime);
+                osc.frequency.linearRampToValueAtTime(700, audioCtx.currentTime + 0.4);
+                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.4);
+            } else {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(350, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(60, audioCtx.currentTime + 0.04);
+                gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.04);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.04);
+            }
+        }
+
+        const gameData = {
+            start: {
+                title: "BÖLÜM 1: KİLİT NOKTASI",
+                tension: "KRİTİK",
+                text: "Saat gece 03:14. Yer altındaki gizli sığınak laboratuvarında ekranlar kırmızıya döndü. Ana sunucu 'OMIKRON' zorla ele geçiriliyor. Dışarıdaki çelik kapı yumruklanıyor. Masada Prototip Gözlük ve Acil Durum Çantası duruyor.",
+                sound: "alarm",
+                action: () => { inventory = []; },
+                choices: [
+                    { text: "[A] Prototip Gözlüğü hızla tak.", next: "gozluk_al" },
+                    { text: "[B] Acil Durum Çantası'nı kap ve masanın altından dolaba ilerle.", next: "canta_al" },
+                    { text: "[C] Hiçbirine dokunma, doğrudan çelik kapının kasasına müdahale et.", next: "kasa_git" }
+                ]
+            },
+            gozluk_al: {
+                title: "BÖLÜM 2A: SAYISAL GERÇEKLİK",
+                tension: "YÜKSEK",
+                text: "Gözlüğü taktın. Artık odadaki kablosuz frekansları ve ısı haritalarını görebiliyorsun. Kapıyı zorlayan şey bir insan değil; prototip bir sızma botu! Envanterine [Gözlük] eklendi.",
+                sound: "click",
+                action: () => { if(!inventory.includes("Gözlük")) inventory.push("Gözlük"); },
+                choices: [
+                    { text: "[A] Masadaki tornavidayı alıp havalandırma kapağını sök.", next: "havalandirma_gir" },
+                    { text: "[B] Gözlük sayesinde botun zayıf frekans kodunu çözmeye çalış.", next: "frekans_coz" }
+                ]
+            },
+            canta_al: {
+                title: "BÖLÜM 2B: AĞIR YÜK",
+                tension: "TEHLİKELİ",
+                text: "Çantayı sırtladın. İçinden güçlü bir şok tabancası ve ana kart çıkarıcı çıktı. Envanterine [Şok Tabancası] eklendi. Çelik kapı büyük bir gürültüyle içeri çöküyor!",
+                sound: "screech",
+                action: () => { if(!inventory.includes("Şok Tabancası")) inventory.push("Şok Tabancası"); },
+                choices: [
+                    { text: "[A] Şok tabancasını kapıdan içeri giren robota doğrult ve ateş et!", next: "robot_vur" },
+                    { text: "[B] Tabancayı ateşleme, çantayı siper alıp karanlığa doğru depar at.", next: "karanlik_kac" }
+                ]
+            },
+            kasa_git: {
+                title: "BÖLÜM 2C: ANA KOD",
+                tension: "ÖLÜMCÜL",
+                text: "Doğrudan ana kasaya yöneldin. Şifreyi girerken arkadaki çelik kapı tamamen patladı ve içeriye kırmızı optikli devasa bir korumaoid girdi! Hayatın için son saniyeler.",
+                sound: "alarm",
+                choices: [
+                    { text: "[A] Kasadaki gizli acil durum diskini kap ve camdan dışarı atla.", next: "disk_atla" },
+                    { text: "[B] Teslim ol ve yapay zekanın teklifini dinle.", next: "teslim_ol" }
+                ]
+            },
+            havalandirma_gir: {
+                title: "BÖLÜM 3: HAVALANDIRMA TÜNELİ",
+                tension: "ORTA",
+                text: "Havalandırmadan sürünerek alt katlara inmeyi başardın. Burası sığınağın ana veri merkezi. Ancak tünelin çıkışı kilitli.",
+                sound: "click",
+                choices: [
+                    { text: "[A] Gözlüğünle ana kilit mekanizmasının devre kartını hackle.", next: "zafer_hack" },
+                    { text: "[B] Boruları zorlayarak ana kontrol odasına yukarıdan düş.", next: "kontrol_dus" }
+                ]
+            },
+            frekans_coz: {
+                title: "BÖLÜM 3: FREKANS ÇATIŞMASI",
+                tension: "YÜKSEK",
+                text: "Frekansı çözmeyi başardın ve robotun ana sistemine sızdın. Robot kısa bir an duraksadı ama şimdi soğutma gazı boruları patlıyor!",
+                sound: "alarm",
+                choices: [
+                    { text: "[A] Gaz valfini kapatıp sığınağın ana çıkışına koş.", next: "zafer_kacis" },
+                    { text: "[B] Robotun işlemcisini söküp kendi sistemine entegre et.", next: "robot_birlestir" }
+                ]
+            },
+            robot_vur: {
+                title: "BÖLÜM 3: ÇATIŞMA ANI",
+                tension: "AKSİYON",
+                text: "Şok tabancasını ateşledin! Mavi elektrik arkları robotu sarıyor. Kısa devre yapan robot, arkasındaki ana sunucu panosuna çarpıyor ve devasa bir patlama gerçekleşiyor.",
+                sound: "screech",
+                choices: [
+                    { text: "[A] Alevlerin arasından geçip acil tahliye asansörüne bin.", next: "zafer_asansor" }
+                ]
+            },
+            karanlik_kac: {
+                title: "BÖLÜM 3: GÖLGELERDE YÜRÜMEK",
+                tension: "GİZLİ",
+                text: "Karanlıkta izini kaybettirdin. Sığınağın gizli bakım tünelindesin. Buradan şehre uzanan yeraltı treni kalkmak üzere.",
+                sound: "click",
+                choices: [
+                    { text: "[A] Hareket halindeki trene atla ve özgürlüğe kavuş.", next: "zafer_tren" }
+                ]
+            },
+            disk_atla: {
+                title: "BÖLÜM 3: SON HAMLE",
+                tension: "DESTANSI",
+                text: "Diski cebine atıp camdan atladın. Aşağıdaki güvenlik havuzuna düşüyorsun. Diskin içindeki sırlar dünyayı değiştirecek!",
+                sound: "screech",
+                choices: [
+                    { text: "[A] Yüzeye çık ve direniş güçleriyle buluş.", next: "zafer_direnis" }
+                ]
+            },
+            teslim_ol: {
+                title: "SON: YENİ DÜZEN",
+                tension: "SON",
+                text: "Yapay zeka seni ortadan kaldırmak yerine insanlık ile makineler arasındaki köprü olarak seçti. Artık sistemin başındasın.",
+                sound: "alarm",
+                choices: [{ text: "🔄 Baştan Başla", next: "start" }]
+            },
+            zafer_hack: {
+                title: "MUTLAK SON: SİSTEM HAKeri",
+                tension: "ZAFER",
+                text: "Kilitleri açtın ve tüm tesisi güvenli moda geçirdin. Kahramanca bir kaçış! Oyunu kazandın!",
+                sound: "click",
+                choices: [{ text: "🔄 Baştan Başla", next: "start" }]
+            },
+            kontrol_dus: {
+                title: "MUTLAK SON: KONTROL MERKEZİ",
+                tension: "ZAFER",
+                text: "Kontrol odasına yukarıdan inip sistemi tamamen kapattın. Tehdit sona erdi. Oyunu kazandın!",
+                sound: "click",
+                choices: [{ text: "🔄 Baştan Başla", next: "start" }]
+            },
+            zafer_kacis: {
+                title: "MUTLAK SON: ÖZGÜRLÜK",
+                tension: "ZAFER",
+                text: "Zorlu engelleri aşarak gün ışığına ulaştın. Sığınak geride kaldı. Oyunu kazandın!",
+                sound: "click",
+                choices: [{ text: "🔄 Baştan Başla", next: "start" }]
+            },
+            robot_birlestir: {
+                title: "MUTLAK SON: MELEZ ZEKA",
+                tension: "ZAFER",
+                text: "Yapay zekanın kodunu kendi zihnine bağladın. Artık durdurulamazsın. Oyunu kazandın!",
+                sound: "click",
+                choices: [{ text: "🔄 Baştan Başla", next: "start" }]
+            },
+            zafer_asansor: {
+                title: "MUTLAK SON: TAHLİYE",
+                tension: "ZAFER",
+                text: "Asansör seni güvenli bir şekilde yeryüzüne çıkardı. Görev başarıyla tamamlandı!",
+                sound: "click",
+                choices: [{ text: "🔄 Baştan Başla", next: "start" }]
+            },
+            zafer_tren: {
+                title: "MUTLAK SON: YERALTI TRENİ",
+                tension: "ZAFER",
+                text: "Tren hızla karanlık tünellerde ilerlerken derin bir nefes aldın. Güvendesin.",
+                sound: "click",
+                choices: [{ text: "🔄 Baştan Başla", next: "start" }]
+            },
+            zafer_direnis: {
+                title: "MUTLAK SON: DİRENİŞ LİDERİ",
+                tension: "ZAFER",
+                text: "Elindeki diskle direnişin simgesi haline geldin. Yeni bir savaş başlıyor!",
+                sound: "click",
+                choices: [{ text: "🔄 Baştan Başla", next: "start" }]
+            }
+        };
+
+        function renderScene(sceneKey) {
+            const scene = gameData[sceneKey];
+            if (scene.action) scene.action();
+            playSound(scene.sound || "click");
+
+            document.getElementById("chapterTitle").innerText = scene.title;
+            document.getElementById("tensionMeter").innerText = "TANSİYON: " + scene.tension;
+            document.getElementById("storyText").innerText = scene.text;
+            
+            let invText = inventory.length > 0 ? inventory.join(", ") : "Boş";
+            document.getElementById("inventoryBar").innerText = "ENVANTER: [ " + invText + " ]";
+
+            const choicesArea = document.getElementById("choicesArea");
+            choicesArea.innerHTML = "";
+
+            scene.choices.forEach(choice => {
+                const btn = document.createElement("button");
+                btn.className = "choice-btn";
+                btn.innerText = choice.text;
+                btn.onclick = () => renderScene(choice.next);
+                choicesArea.appendChild(btn);
+            });
+        }
+
+        renderScene("start");
+    </script>
 </body>
 </html>
