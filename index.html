@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Ege Gizemi - Noir Dedektif Sürümü</title>
+<title>Ege Gizemi - Açık Dünya & Sorgu Sistemi</title>
 <style>
 :root {
 --bg-color: #0c0f0e;
@@ -41,7 +41,6 @@ display: flex;
 flex-direction: column;
 position: relative;
 }
-/* Tasarım İyileştirmeleri: Üst Panel */
 .top-panel {
 background: #17211b;
 border-bottom: 1px solid var(--border-color);
@@ -93,10 +92,9 @@ border-bottom: 1px solid var(--border-color);
 font-family: monospace;
 letter-spacing: 0.5px;
 }
-/* Hikaye Metin Alanı */
 .screen-area {
-padding: 32px;
-min-height: 260px;
+padding: 30px;
+min-height: 240px;
 display: flex;
 align-items: center;
 justify-content: center;
@@ -107,7 +105,6 @@ color: #f1f5f9;
 border-bottom: 1px solid var(--border-color);
 background: radial-gradient(circle, #18231c 0%, #131a16 100%);
 }
-/* Seçim Alanı ve Butonlar */
 .choices-area {
 padding: 20px;
 display: flex;
@@ -140,8 +137,8 @@ box-shadow: 0 6px 12px rgba(52,211,153,0.15);
 <div class="game-container">
 <div class="top-panel">
 <div class="status-bar">
-<span id="chapterTitle">BÖLÜM 1: DÖNÜŞ</span>
-<span id="tensionMeter">ATMOSFER: GERİLİMLİ</span>
+<span id="chapterTitle">BÖLÜM 1: SERBEST KEŞİF</span>
+<span id="tensionMeter">ATMOSFER: GİZEMLİ</span>
 </div>
 <div class="audio-controls">
 <span id="audioStatus">🔊 Seslendirme: Hazır</span>
@@ -161,6 +158,12 @@ Hikaye yükleniyor...
 let inventory = [];
 let currentText = "";
 let isPaused = false;
+// Sorgu Takip Sistemi (Karakterlerin sırları)
+let interrogationState = {
+muhtar: { talked: false, suspicious: false },
+terzi: { talked: false, confessed: false },
+hakim: { talked: false, nervous: false }
+};
 function speakText(text) {
 currentText = text;
 if ('speechSynthesis' in window) {
@@ -197,110 +200,143 @@ speakText(currentText);
 }
 const gameData = {
 start: {
-title: "BÖLÜM 1: CİNAYET Mİ, KAZA MI?",
-tension: "BOĞUCU ŞÜPHE",
-text: "İzmir'in tarihi sokaklarından, taş evleri ve zeytinlikleriyle ünlü o kasabaya adım attığında üzerindeki dedektiflik kimliği omzuna ağır bir yük gibi bindi. Seni buraya çeken şey sadece deden Ruhan Tonguç’un ani ölümü değildi; yerel kolluk kuvvetlerinin 'yaşlılığa bağlı kalp krizi' olarak kapattığı raporun altındaki derin çelişkilerdi. Deden, yıllar önce kasabada işlenen ve asla çözülemeyen o meşhur 'Müftü Cinayeti' dosyasını yeniden açmak üzereydi. Kasaba meydanındaki kahvehanede oturanların bakışları seni delerken, dedenin ölüm gecesi evine kilitli bir mektup geldiğini öğrendin.",
+title: "BÖLÜM 1: KASABAYA GİRİŞ",
+tension: "SERBEST KEŞİF",
+text: "İzmir'in tarihi taş evleri, dar sokakları ve zeytin kokulu rüzgarıyla ünlü bu kasabasına resmi dedektif kimliğinle adım attın. Deden Ruhan Tonguç’un ölümü resmi raporlarda kalp krizi geçse de, içinde bunun bir cinayet olduğuna dair güçlü şüpheler var. Artık kasabada serbestsin; istersen ipucu aramak için dedenin evine gidebilir, istersen mahalle esnafını ve yetkilileri sorguya çekebilirsin.",
 action: () => { inventory = []; },
 choices: [
-{ text: "Doğrudan dedenin eski evine git ve olay yerindeki adli delilleri, parmak izlerini ve gizli notları incele.", next: "olay_yeri" },
-{ text: "Kasabanın gizli kapaklı işlerini yürüten ve dedenin en büyük düşmanı olan Muhtar İsmail ile yüzleş.", next: "muhtar_sorgu" }
+{ text: "🏠 Dedenin Eski Evine Git (Delil Ara)", next: "olay_yeri" },
+{ text: "☕ Kasaba Meydanı / Kahvehaneye Git (Muhtarla Konuş)", next: "muhtar_sorgu_menu" },
+{ text: "🧵 Çarşıdaki Terziye Git (Şüpheli Kol Düğmesini Sor)", next: "terzi_sorgu_menu" },
+{ text: "⚖️ Adliye / Hakimlik Binasına Git (Hakimle Yüzleş)", next: "hakim_sorgu_menu" },
+{ text: "🏭 Eski Zeytinyağı Fabrikasına Git", next: "fabrika_gece" }
 ]
 },
 olay_yeri: {
-title: "BÖLÜM 2: ADLİ İNCELEME",
-tension: "DELİLLERİN DİLİ",
-text: "Dedenin taş evine girdiğinde, evin içerisinin birileri tarafından didik didik arandığını fark ettin. Kitaplıklar devrilmemiş ama kitapların sıralaması şifreli bir düzene göre değiştirilmişti. Çalışma masasının üzerinde, dedenin ölüm gecesi yazdığı son satırlar duruyor: 'Zehir, rapordaki gibi kalp krizini taklit ediyor. Katil kasabanın içinde, en güvendiğim yerde.' Masanın çekmecesinden dedenin eski polis not defteri ve olay gecesi camın kenarına düşmüş gümüş bir kol düğmesi çıktı.",
+title: "MEKAN: DEDENİN EVİ",
+tension: "ADLİ İNCELEME",
+text: "Dedenin taş evindesin. Pencerelerden sızan tozlu ışık altında evi didik didik arıyorsun. Çalışma masasında dedenin son notları ve yerdeki halının altında gizli bir bölme buldun.",
 action: () => {
-if(!inventory.includes("Polis Not Defteri")) inventory.path = inventory.push("Polis Not Defteri");
+if(!inventory.includes("Polis Not Defteri")) inventory.push("Polis Not Defteri");
 if(!inventory.includes("Gümüş Kol Düğmesi")) inventory.push("Gümüş Kol Düğmesi");
 },
 choices: [
-{ text: "Not defterindeki ipuçlarını takip ederek Müftü cinayetiyle bu ölüm arasındaki bağı çözmeye çalış.", next: "arsiv_incele" },
-{ text: "Gümüş kol düğmesinin kime ait olduğunu bulmak için kasabanın kuyumcusuna veya ileri gelenlerine git.", next: "kol_dugmesi_takip" }
+{ text: "📜 Not Defterini incele (Müftü Cinayeti bağlantısını gör)", next: "not_detay" },
+{ text: "🗺️ Kasaba Merkezine Geri Dön", next: "start" }
 ]
 },
-muhtar_sorgu: {
-title: "BÖLÜM 2: SORGUK ODASI SOKAĞI",
-tension: "TEHLİKELİ YÜZLEŞME",
-text: "Muhtar İsmail'in evine habersiz gittiğinde, adamın yüzündeki o yapmacık taziye gülümsemesi hemen soldu. Karşında, kasabada unuttuğunu sandığın o karanlık mafyatik yapının izleri duruyordu. İsmail, masaya ağır bir kahve fincanı bırakırken soğuk bir sesle konuştu: 'Deden çok fazla kurcalıyordu delikanlı. Yıllar önceki cinayeti ve fabrikanın altındaki sırrı kurcalayanların sonu hep aynı bitmiştir. Fazla merak, Ege güneşinden daha çabuk yakar adamı.' Sana elindeki eski bir gazete kupürünü uzatıyor.",
+not_detay: {
+title: "DELİL İnceLEMESİ",
+tension: "BÜYÜK KEŞİF",
+text: "Not defterinde, yıllar önceki 'Müftü Cinayeti' ile dedenin zehirlenmesi arasında doğrudan bir bağ olduğu yazıyor. Katilin kasabada hala elini kolunu sallayarak gezen üst düzey bir yetkili olduğunu öğreniyorsun.",
 action: () => {
-if(!inventory.includes("Eski Gazete Kupürü")) inventory.push("Eski Gazete Kupürü");
+if(!inventory.includes("Dosya Bağlantısı")) inventory.push("Dosya Bağlantısı");
 },
 choices: [
-{ text: "Muhtarın tehditlerine boyun eğmeyip onu cinayetle suçla ve dedenin intikamını almak için delil topla.", next: "arsiv_incele" },
-{ text: "Şimdilik sakin kalıp kasabanın eski zeytinyağı fabrikasına doğru gizlice yönel.", next: "fabrika_gece" }
+{ text: "Kasaba Meydanına Dön ve Şüphelileri Sorgula", next: "start" }
 ]
 },
-arsiv_incele: {
-title: "BÖLÜM 3: DOSYA KAPANMIYOR",
-tension: "GERÇEĞE YAKLAŞIRKEN",
-text: "Topladığın gümüş kol düğmesi, eski gazete kupürü ve dedenin not defterini birleştirdiğinde şok edici gerçeğe ulaşıyorsun. Müftü cinayetini işleyen kişi ile dedeni zehirleyen katil aynı kişiydi: Kasabanın saygın görünen eski savcısı, şimdi ise hakim olan kişi! Deden, adamın yıllar önce işlediği suçu kanıtlayan ana delili eski zeytinyağı fabrikasının altındaki kasada saklıyordu. Artık elinde katilin kimliği var, ancak katil senin bu bilgilere ulaştığını öğrendi.",
-action: () => {
-if(!inventory.includes("Katilin Kimliği")) inventory.push("Katilin Kimliği");
-},
+muhtar_sorgu_menu: {
+title: "SORGU: MUHTAR İSMAİL",
+tension: "GERGİN DİYALOG",
+text: "Muhtar İsmail, çay ocağının önünde seni görünce hafifçe geriliyor. 'Buyur dedektif bey, kasabamız sakindir, ne arıyorsun burada?' diye soruyor.",
+action: () => { interrogationState.muhtar.talked = true; },
 choices: [
-{ text: "Doğrudan jandarmaya gidip hakimi tutuklatmak için resmi işlem başlat.", next: "son_resmi_adalet" },
-{ text: "Adaleti kendi ellerine alıp katille eski fabrikada yüzleşmek için tuzağa doğru git.", next: "son_intikam_tuzagi" },
-{ text: "Elindeki delilleri ifşa etmek yerine şantaj yapıp kasabadan kaçmaya çalış.", next: "son_kacis_ve_ihanet" },
-{ text: "Gerçeği unutup kasabayı terk et, bazı sırlar toprağın altında kalmalıdır.", next: "son_korkak_kacis" }
+{ text: "🗣️ Sorgula: 'Dedenin ölüm gecesi neredeydin?'", next: "muhtar_cevap_1" },
+{ text: "🗣️ Sorgula: 'Yıllar önceki Müftü cinayeti hakkında ne biliyorsun?'", next: "muhtar_cevap_2" },
+{ text: "🔙 Kasaba Merkezine Dön", next: "start" }
 ]
 },
-kol_dugmesi_takip: {
-title: "BÖLÜM 3: İZ SÜRME",
-tension: "TAKİPTEYKEN",
-text: "Gümüş kol düğmesini kasabanın eski terzisine götürdüğünde, terzi elleri titreyerek bunun kasabanın en yetkili ismine, yani Hakime ait özel bir dikim takımının parçası olduğunu itiraf ediyor. Deden, Hakim'in yıllar önceki cinayeti örtbas ettiğini kanıtlayan son kişiydi. Bu yüzden susturuldu.",
+muhtar_cevap_1: {
+title: "MUHTARIN İTİRAFI",
+tension: "ŞÜPHELİ TAVIRLAR",
+text: "Muhtar çay bardağını sertçe masaya bırakıyor: 'O gece evimde uyuyordum! Ruhan hoca çok fazla şey biliyordu, herkesin kuyusunu kazıyordu. Hakim efendiye sorarsan o da bilir!'",
+action: () => { interrogationState.muhtar.suspicious = true; },
+choices: [{ text: "Devam Et", next: "muhtar_sorgu_menu" }]
+},
+muhtar_cevap_2: {
+title: "MUHTARIN İTİRAFI",
+tension: "TEHDİT",
+text: "Muhtar sesini alçaltıyor: 'Müftü meselesini kapat delikanlı. O işin arkasında bu kasabanın en büyük kökleri var. Kendini ateşe atıyorsun.'",
+choices: [{ text: "Devam Et", next: "muhtar_sorgu_menu" }]
+},
+terzi_sorgu_menu: {
+title: "SORGU: ESKİ TERZİ",
+tension: "KORKU DOLU BAKIŞLAR",
+text: "Terzi dükkanında ipliklerin arasında titriyor. Yanındaki gümüş kol düğmesine bakarak sana gözlerini dikiyor.",
+action: () => { interrogationState.terzi.talked = true; },
+choices: [
+{ text: "🔍 Kanıt Göster: Gümüş Kol Düğmesini göster ve kime ait olduğunu sor.", next: "terzi_itiraf" },
+{ text: "🔙 Kasaba Merkezine Dön", next: "start" }
+]
+},
+terzi_itiraf: {
+title: "TERZİNİN İTİRAFI",
+tension: "BÜYÜK İPUCU",
+text: "Terzi yutkunuyor: 'Bu... Bu düğme Hakim beyin özel dikim ceketine ait! O gece fabrikanın orada birileriyle buluşacağını söylemişti. Lütfen beni karıştırmayın!'",
 action: () => {
+interrogationState.terzi.confessed = true;
 if(!inventory.includes("Terzi İtirafı")) inventory.push("Terzi İtirafı");
 },
+choices: [{ text: "Devam Et", next: "start" }]
+},
+hakim_sorgu_menu: {
+title: "SORGU: HAKİM",
+tension: "TEHLİKELİ ZİRVESİ",
+text: "Adliye binasında odasına girdiğinde Hakim son derece sakin ve kibar bir ifadeyle seni karşılıyor. 'Buyurun dedektif bey, adaletin kapısı herkese açıktır' diyor.",
+action: () => { interrogationState.hakim.talked = true; },
 choices: [
-{ text: "Delilleri birleştirip nihai kararı vermek üzere eski fabrikadaki gizli odaya in.", next: "fabrika_gece" }
+{ text: "🗣️ Suçla: 'Dedenin zehirlenmesi ve Müftü cinayetinin katili sensin!'", next: "hakim_tepki" },
+{ text: "🔙 Kasaba Merkezine Dön", next: "start" }
 ]
+},
+hakim_tepki: {
+title: "HAKİMİN TEPKİSİ",
+tension: "ÖLÜMCÜL TEHDİT",
+text: "Hakim hafifçe gülüyor: 'Kanıtın var mı delikanlı? Bu kasabada kanun benim. Eğer yeterli delilin yoksa sabaha çıkamazsın.' (Not: Yeterli delil topladıysan eski fabrikaya gitmelisin!)",
+action: () => { interrogationState.hakim.nervous = true; },
+choices: [{ text: "Kasaba Merkezine Dön", next: "start" }]
 },
 fabrika_gece: {
-title: "BÖLÜM 3: FABRİKANIN GÖLGELERİ",
-tension: "ÖLÜMCÜL TUZAK",
-text: "Zeytinyağı fabrikasının paslı demir kapısından içeri girdiğinde arkandan kapının kilitlenme sesini duydun. Karanlığın içinden gelen sakin ve yankılı bir ses duyuldu: 'Dedende çok akıllıydı ama ölümün nerede aranacağını bilemedi.' Hakim, elinde silahla karanlıktan çıkıp karşına dikildi. Artık ölüm kalım savaşındasın.",
+title: "MEKAN: ESKİ FABRİKA (FİNAL BÖLGESİ)",
+tension: "HESAPLAŞMA",
+text: "Zeytinyağı fabrikasının karanlık ve rutubetli zeminindesin. Elinde topladığın delillerle (Terzi İtirafı, Not Defteri, Kol Düğmesi) katille yüzleşme vakti geldi. Arkadan yaklaşan adım seslerini duyuyorsun...",
 action: () => {},
 choices: [
-{ text: "Hızlı bir hamleyle fabrikanın ana şalterini indirip karanlıkta üstünlüğü ele geçir.", next: "son_taktik_zafer" },
-{ text: "Hakim'in konuşmasını uzatıp gizlice jandarmayı aradığını söyleyerek dikkatini dağıt.", next: "son_resmi_adalet" }
+{ text: "⚖️ Delilleri sun ve Hakim'i adalete teslim et (Resmi Adalet Sonu)", next: "son_resmi_adalet" },
+{ text: "🗡️ Adaleti kendi ellerine alıp katille hesaplaş (İntikam Sonu)", next: "son_intikam_tuzagi" },
+{ text: "💸 Delilleri saklayıp Hakim'le anlaş (İhanet Sonu)", next: "son_kacis_ve_ihanet" },
+{ text: "🏃‍♂️ Korkup kasabadan kaç (Kötü Son)", next: "son_korkak_kacis" }
 ]
 },
-/* ALTERNATİF SONLAR */
+/* SONLAR */
 son_resmi_adalet: {
-title: "ALTERNATİF SON I: ADALETİN ZAFERİ",
+title: "SON I: ADALETİN TERTEMİZ ZAFERİ",
 tension: "HUZURLU HAKİKAT",
-text: "Topladığın deliller ve terzi ifadesiyle jandarmayı harekete geçirdin. Hakim ve suç ortakları suçüstü yakalanarak tutuklandı. Dedenin ruhu nihayet huzura erdi. Sen ise kasabadan ayrılırken sıradan bir ziyaretçi değil, gerçeği gün ışığına çıkaran efsanevi bir dedektif olarak hatırlandın. Oyunu kazandın!",
+text: "Topladığın terzi itirafı ve not defteri sayesinde jandarmayı harekete geçirdin. Hakim suçüstü yakalanarak tutuklandı. Dedenin ruhu huzura erdi. Sen ise efsanevi bir dedektif olarak kasabadan ayrıldın. Oyunu kazandın!",
 action: () => {},
-choices: [{ text: "🔄 Hikayeyi Baştan Yaşa", next: "start" }]
+choices: [{ text: "🔄 Oyunu Baştan Başlat", next: "start" }]
 },
 son_intikam_tuzagi: {
-title: "ALTERNATİF SON II: GÖZE GÖZ",
-tension: "KARANLIK ADALET",
-text: "Resmi makamların yavaş işleyen adaletine güvenmeyip mahkemeyi kendi ellerinde kurdun. Fabrikanın derinliklerinde katille yüzleşip adaleti sağladın, ancak bu karanlık yol senin de ruhunda silinmez izler bıraktı. Artık sen de bu kasabanın karanlık efsanelerinden birisin. Oyunu tamamladın!",
+title: "SON II: GÖZE GÖZ, DİŞE DİŞ",
+tension: "KARANLIK HESAPLAŞMA",
+text: "Resmi adaleti beklemeyip fabrikanın karanlığında intikamını aldın. Katil cezasını buldu ancak bu zafer senin ruhunda silinmez izler bıraktı. Oyunu tamamladın!",
 action: () => {},
-choices: [{ text: "🔄 Hikayeyi Baştan Yaşa", next: "start" }]
+choices: [{ text: "🔄 Oyunu Baştan Başlat", next: "start" }]
 },
 son_kacis_ve_ihanet: {
-title: "ALTERNATİF SON III: SESSİZ ORTAKLIK",
-tension: "YÜKSEK BEDEL",
-text: "Gerçeği açığa çıkarmak yerine güçlü insanlarla pazarlık masasına oturdun. Cebin para doldu belki ama dedenin kemikleri sızladı. Kasabadan ayrılırken arkana baktığında, ne bir gurur ne de bir adalet duygusu vardı; sadece suçluluk hissiyle baş başa kaldın. Oyunu bitirdin.",
+title: "SON III: SESSİZ ORTAKLIK VE SUÇLULUK",
+tension: "AĞIR BEDEL",
+text: "Güçlü insanlarla masaya oturup susma payını kabul ettin. Cebin doldu ama vicdanın karardı. Kasabadan ayrılırken arkana baktığında sadece pişmanlık vardı. Oyunu bitirdin.",
 action: () => {},
-choices: [{ text: "🔄 Hikayeyi Baştan Yaşa", next: "start" }]
+choices: [{ text: "🔄 Oyunu Baştan Başlat", next: "start" }]
 },
 son_korkak_kacis: {
-title: "ALTERNATİF SON IV: UNUTULUŞ",
+title: "SON IV: UNUTULUŞ VE KORKU",
 tension: "PİŞMANLIK",
-text: "Gerçeklerle yüzleşmek sana çok ağır geldi. Her şeyi arkanda bırakıp ilk otobüsle kasabadan kaçtın. Dedenin ölümündeki sır ebediyen karanlığa gömüldü, kasaba ise kendi sessiz yalanlarıyla baş başa kaldı. Oyunu kaybettin.",
+text: "Tehlikeyi göze alamayıp ilk otobüsle kasabadan kaçtın. Dedenin katili elini kolunu sallayarak gezip sırrı mezara götürdü. Oyunu kaybettin.",
 action: () => {},
-choices: [{ text: "🔄 Hikayeyi Baştan Yaşa", next: "start" }]
-},
-son_taktik_zafer: {
-title: "ALTERNATİF SON V: TAKTİKSEL ÜSTÜNLÜK",
-tension: "ZAFİRE GİDEN YOL",
-text: "Karanlığı avantaja çevirip şalteri indirdin ve profesyonel reflekslerinle katili etkisiz hale getirip polise teslim ettin. Zekan sayesinde kasabanın en büyük karanlığını aydınlattın. Muazzam bir dedektiflik başarısı! Oyunu kazandın!",
-action: () => {},
-choices: [{ text: "🔄 Hikayeyi Baştan Yaşa", next: "start" }]
+choices: [{ text: "🔄 Oyunu Baştan Başlat", next: "start" }]
 }
 };
 function renderScene(sceneKey) {
