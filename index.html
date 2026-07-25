@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Ege Gizemi - Açık Dünya & Sorgu Sistemi</title>
+<title>Ege Gizemi - Ortak Dedektiflik & Quick Time Event Sürümü</title>
 <style>
 :root {
 --bg-color: #0c0f0e;
@@ -11,6 +11,7 @@
 --border-color: #243328;
 --accent-green: #34d399;
 --accent-gold: #fbbf24;
+--accent-red: #f87171;
 --text-main: #e2e8f0;
 --text-muted: #94a3b8;
 --btn-bg: #1c2820;
@@ -104,6 +105,7 @@ line-height: 1.95;
 color: #f1f5f9;
 border-bottom: 1px solid var(--border-color);
 background: radial-gradient(circle, #18231c 0%, #131a16 100%);
+position: relative;
 }
 .choices-area {
 padding: 20px;
@@ -131,14 +133,69 @@ border-color: var(--accent-green);
 transform: translateY(-2px);
 box-shadow: 0 6px 12px rgba(52,211,153,0.15);
 }
+/* Telltale Tarzı QTE (Hızlı Tıklama) Stilleri */
+.qte-overlay {
+position: absolute;
+top: 0;
+left: 0;
+width: 100%;
+height: 100%;
+background: rgba(12, 15, 14, 0.92);
+display: flex;
+flex-direction: column;
+align-items: center;
+justify-content: center;
+z-index: 10;
+padding: 20px;
+box-sizing: border-box;
+text-align: center;
+}
+.qte-title {
+color: var(--accent-red);
+font-size: 18px;
+font-family: 'Segoe UI', Tahoma, sans-serif;
+font-weight: bold;
+margin-bottom: 15px;
+letter-spacing: 2px;
+text-transform: uppercase;
+}
+.qte-timer-bar {
+width: 80%;
+height: 8px;
+background: #243328;
+border-radius: 4px;
+overflow: hidden;
+margin-bottom: 25px;
+}
+.qte-timer-fill {
+height: 100%;
+background: var(--accent-red);
+width: 100%;
+transition: width linear;
+}
+.qte-click-btn {
+background: #991b1b;
+color: white;
+border: 2px solid #f87171;
+padding: 20px 40px;
+font-size: 20px;
+font-weight: bold;
+border-radius: 50%;
+cursor: pointer;
+box-shadow: 0 0 20px rgba(248, 113, 113, 0.5);
+transition: transform 0.1s;
+}
+.qte-click-btn:active {
+transform: scale(0.9);
+}
 </style>
 </head>
 <body>
 <div class="game-container">
 <div class="top-panel">
 <div class="status-bar">
-<span id="chapterTitle">BÖLÜM 1: SERBEST KEŞİF</span>
-<span id="tensionMeter">ATMOSFER: GİZEMLİ</span>
+<span id="chapterTitle">BÖLÜM 1: ORTAKLIĞIN İLK GÜNÜ</span>
+<span id="tensionMeter">ATMOSFER: GERİLİMLİ</span>
 </div>
 <div class="audio-controls">
 <span id="audioStatus">🔊 Seslendirme: Hazır</span>
@@ -158,7 +215,6 @@ Hikaye yükleniyor...
 let inventory = [];
 let currentText = "";
 let isPaused = false;
-// Sorgu Takip Sistemi (Karakterlerin sırları)
 let interrogationState = {
 muhtar: { talked: false, suspicious: false },
 terzi: { talked: false, confessed: false },
@@ -198,82 +254,106 @@ isPaused = false;
 speakText(currentText);
 }
 }
+// Telltale Tarzı Hızlı Tıklama (QTE) Fonksiyonu
+function startQTE(promptText, durationSeconds, successNextScene, failNextScene) {
+window.speechSynthesis.cancel();
+const screenArea = document.getElementById("storyText");
+const choicesArea = document.getElementById("choicesArea");
+choicesArea.innerHTML = "";
+speakText("Dikkat! Hızlı hareket et!");
+screenArea.innerHTML = ⁠<div class="qte-overlay"> <div class="qte-title">⚠️ ${promptText}</div> <div class="qte-timer-bar"> <div class="qte-timer-fill" id="qteTimerFill" style="transition-duration: ${durationSeconds}s;"></div> </div> <button class="qte-click-btn" id="qteButton">TIKLA!</button> </div>⁠;
+setTimeout(() => {
+const fill = document.getElementById("qteTimerFill");
+if (fill) fill.style.width = "0%";
+}, 50);
+let clicked = false;
+const btn = document.getElementById("qteButton");
+btn.onclick = () => {
+if (!clicked) {
+clicked = true;
+clearTimeout(timer);
+renderScene(successNextScene);
+}
+};
+const timer = setTimeout(() => {
+if (!clicked) {
+clicked = true;
+renderScene(failNextScene);
+}
+}, durationSeconds * 1000);
+}
 const gameData = {
 start: {
-title: "BÖLÜM 1: KASABAYA GİRİŞ",
-tension: "SERBEST KEŞİF",
-text: "İzmir'in tarihi taş evleri, dar sokakları ve zeytin kokulu rüzgarıyla ünlü bu kasabasına resmi dedektif kimliğinle adım attın. Deden Ruhan Tonguç’un ölümü resmi raporlarda kalp krizi geçse de, içinde bunun bir cinayet olduğuna dair güçlü şüpheler var. Artık kasabada serbestsin; istersen ipucu aramak için dedenin evine gidebilir, istersen mahalle esnafını ve yetkilileri sorguya çekebilirsin.",
+title: "BÖLÜM 1: KUŞAKLARIN BULUŞMASI",
+tension: "SERBEST KEŞİF & ORTAKLIK",
+text: "İzmir'in tarihi taş sokaklarında deden Ruhan Tonguç ile omuz omuza yürüyorsun. Kasabayı kasıp kavuran o tehlikeli sırrı ortaya çıkarmak için artık yalnız değilsin; deden ölümden döndü ve en büyük yardımcın olarak dosyanın başında! Kasabada serbestçe hareket edebilir, delil arayabilir ya da şüphelileri sorgulayabilirsiniz.",
 action: () => { inventory = []; },
 choices: [
-{ text: "🏠 Dedenin Eski Evine Git (Delil Ara)", next: "olay_yeri" },
-{ text: "☕ Kasaba Meydanı / Kahvehaneye Git (Muhtarla Konuş)", next: "muhtar_sorgu_menu" },
+{ text: "🏠 Dedenin Eski Evine Git (Ortak İnceleme ve Deliller)", next: "olay_yeri" },
+{ text: "☕ Kasaba Meydanı / Kahvehaneye Git (Muhtarı Sorgula)", next: "muhtar_sorgu_menu" },
 { text: "🧵 Çarşıdaki Terziye Git (Şüpheli Kol Düğmesini Sor)", next: "terzi_sorgu_menu" },
 { text: "⚖️ Adliye / Hakimlik Binasına Git (Hakimle Yüzleş)", next: "hakim_sorgu_menu" },
-{ text: "🏭 Eski Zeytinyağı Fabrikasına Git", next: "fabrika_gece" }
+{ text: "🏭 Eski Zeytinyağı Fabrikasına Git (Tehlikeli Baskın)", next: "fabrika_baskin_giris" }
 ]
 },
 olay_yeri: {
 title: "MEKAN: DEDENİN EVİ",
-tension: "ADLİ İNCELEME",
-text: "Dedenin taş evindesin. Pencerelerden sızan tozlu ışık altında evi didik didik arıyorsun. Çalışma masasında dedenin son notları ve yerdeki halının altında gizli bir bölme buldun.",
+tension: "BABAOĞUL / DEDEDEN TORUNA ORTAKLIK",
+text: "Taş evin salonunda deden Ruhan çayını yudumlarken masadaki belgeleri inceliyor. 'Evlat, yıllar önce Müftü cinayetini ben de araştırıyordum ama Hakim beni zehirlemeye kalktı. Şimdi birlikte bu işi bitireceğiz' diyor. Masada dedenin gizli notları ve gümüş kol düğmesi duruyor.",
 action: () => {
 if(!inventory.includes("Polis Not Defteri")) inventory.push("Polis Not Defteri");
 if(!inventory.includes("Gümüş Kol Düğmesi")) inventory.push("Gümüş Kol Düğmesi");
 },
 choices: [
-{ text: "📜 Not Defterini incele (Müftü Cinayeti bağlantısını gör)", next: "not_detay" },
+{ text: "📜 Not Defterindeki şifreleri dedenle birlikte çöz", next: "not_detay" },
 { text: "🗺️ Kasaba Merkezine Geri Dön", next: "start" }
 ]
 },
 not_detay: {
-title: "DELİL İnceLEMESİ",
-tension: "BÜYÜK KEŞİF",
-text: "Not defterinde, yıllar önceki 'Müftü Cinayeti' ile dedenin zehirlenmesi arasında doğrudan bir bağ olduğu yazıyor. Katilin kasabada hala elini kolunu sallayarak gezen üst düzey bir yetkili olduğunu öğreniyorsun.",
+title: "ORTAK ANALİZ",
+tension: "GİZEM AYDINLANIYOR",
+text: "Dedenle birlikte defteri incelediğinizde, eski Müftü cinayetinin Hakim tarafından örtbas edildiğini ve tüm delillerin fabrikanın altındaki kasada saklandığını kesinleştiriyorsunuz.",
 action: () => {
 if(!inventory.includes("Dosya Bağlantısı")) inventory.push("Dosya Bağlantısı");
 },
 choices: [
-{ text: "Kasaba Meydanına Dön ve Şüphelileri Sorgula", next: "start" }
+{ text: "Kasaba Merkezine Dön", next: "start" }
 ]
 },
 muhtar_sorgu_menu: {
 title: "SORGU: MUHTAR İSMAİL",
 tension: "GERGİN DİYALOG",
-text: "Muhtar İsmail, çay ocağının önünde seni görünce hafifçe geriliyor. 'Buyur dedektif bey, kasabamız sakindir, ne arıyorsun burada?' diye soruyor.",
+text: "Yanında deden Ruhan'ı canlı ve kanlı canlı görünce Muhtar İsmail'in rengi sararıyor! Ağzı açık kalıyor. Deden Ruhan sert bir sesle, 'Şaşırdın değil mi İsmail?' diyor.",
 action: () => { interrogationState.muhtar.talked = true; },
 choices: [
-{ text: "🗣️ Sorgula: 'Dedenin ölüm gecesi neredeydin?'", next: "muhtar_cevap_1" },
-{ text: "🗣️ Sorgula: 'Yıllar önceki Müftü cinayeti hakkında ne biliyorsun?'", next: "muhtar_cevap_2" },
+{ text: "🗣️ Sorgula: 'Cinayet gecesi Hakim ile ne konuştunuz?'", next: "muhtar_itiraf_2" },
 { text: "🔙 Kasaba Merkezine Dön", next: "start" }
 ]
 },
-muhtar_cevap_1: {
+muhtar_itiraf_2: {
 title: "MUHTARIN İTİRAFI",
-tension: "ŞÜPHELİ TAVIRLAR",
-text: "Muhtar çay bardağını sertçe masaya bırakıyor: 'O gece evimde uyuyordum! Ruhan hoca çok fazla şey biliyordu, herkesin kuyusunu kazıyordu. Hakim efendiye sorarsan o da bilir!'",
-action: () => { interrogationState.muhtar.suspicious = true; },
-choices: [{ text: "Devam Et", next: "muhtar_sorgu_menu" }]
+tension: "KORKU DOLU İTİRAF",
+text: "Muhtar kekeleyerek: 'R... Ruhan hoca! Sen ölmemiş miydin? Tamam anlatıyorum! Hakim beni tehdit etti, cinayeti örtbas etmezsem fabrikayı başıma yıkarım dedi!'",
+action: () => {
+interrogationState.muhtar.suspicious = true;
+if(!inventory.includes("Muhtarın İtirafı")) inventory.push("Muhtarın İtirafı");
 },
-muhtar_cevap_2: {
-title: "MUHTARIN İTİRAFI",
-tension: "TEHDİT",
-text: "Muhtar sesini alçaltıyor: 'Müftü meselesini kapat delikanlı. O işin arkasında bu kasabanın en büyük kökleri var. Kendini ateşe atıyorsun.'",
 choices: [{ text: "Devam Et", next: "muhtar_sorgu_menu" }]
 },
 terzi_sorgu_menu: {
 title: "SORGU: ESKİ TERZİ",
-tension: "KORKU DOLU BAKIŞLAR",
-text: "Terzi dükkanında ipliklerin arasında titriyor. Yanındaki gümüş kol düğmesine bakarak sana gözlerini dikiyor.",
+tension: "TİTRERKEN",
+text: "Terzi dükkanında dedeni görünce elleri titremeye başlıyor. Gümüş kol düğmesini masaya koyuyorsunuz.",
 action: () => { interrogationState.terzi.talked = true; },
 choices: [
-{ text: "🔍 Kanıt Göster: Gümüş Kol Düğmesini göster ve kime ait olduğunu sor.", next: "terzi_itiraf" },
+{ text: "🔍 Kanıt Göster: Kol düğmesinin Hakim'e ait olduğunu onaylat.", next: "terzi_itiraf" },
 { text: "🔙 Kasaba Merkezine Dön", next: "start" }
 ]
 },
 terzi_itiraf: {
 title: "TERZİNİN İTİRAFI",
-tension: "BÜYÜK İPUCU",
-text: "Terzi yutkunuyor: 'Bu... Bu düğme Hakim beyin özel dikim ceketine ait! O gece fabrikanın orada birileriyle buluşacağını söylemişti. Lütfen beni karıştırmayın!'",
+tension: "KESİN KANIT",
+text: "Terzi: 'Evet, evet! Bu düğme Hakim beyin ceketine ait. Fabrikadaki buluşmaya giderken benden diktirmişti!'",
 action: () => {
 interrogationState.terzi.confessed = true;
 if(!inventory.includes("Terzi İtirafı")) inventory.push("Terzi İtirafı");
@@ -282,59 +362,76 @@ choices: [{ text: "Devam Et", next: "start" }]
 },
 hakim_sorgu_menu: {
 title: "SORGU: HAKİM",
-tension: "TEHLİKELİ ZİRVESİ",
-text: "Adliye binasında odasına girdiğinde Hakim son derece sakin ve kibar bir ifadeyle seni karşılıyor. 'Buyurun dedektif bey, adaletin kapısı herkese açıktır' diyor.",
+tension: "TEHLİKELİ ZİRVE",
+text: "Adliye odasına dedenle birlikte girdiğinizde Hakim ayağa kalkıyor. Karşısında hayalet görmüş gibi dönüp kalıyor, ardından çılgına dönüyor.",
 action: () => { interrogationState.hakim.talked = true; },
 choices: [
-{ text: "🗣️ Suçla: 'Dedenin zehirlenmesi ve Müftü cinayetinin katili sensin!'", next: "hakim_tepki" },
+{ text: "🗣️ Suçla: 'Oyun bitti Hakim, terzi ve muhtar her şeyi ötü!'", next: "hakim_tepki_saldiri" },
 { text: "🔙 Kasaba Merkezine Dön", next: "start" }
 ]
 },
-hakim_tepki: {
-title: "HAKİMİN TEPKİSİ",
-tension: "ÖLÜMCÜL TEHDİT",
-text: "Hakim hafifçe gülüyor: 'Kanıtın var mı delikanlı? Bu kasabada kanun benim. Eğer yeterli delilin yoksa sabaha çıkamazsın.' (Not: Yeterli delil topladıysan eski fabrikaya gitmelisin!)",
-action: () => { interrogationState.hakim.nervous = true; },
-choices: [{ text: "Kasaba Merkezine Dön", next: "start" }]
-},
-fabrika_gece: {
-title: "MEKAN: ESKİ FABRİKA (FİNAL BÖLGESİ)",
-tension: "HESAPLAŞMA",
-text: "Zeytinyağı fabrikasının karanlık ve rutubetli zeminindesin. Elinde topladığın delillerle (Terzi İtirafı, Not Defteri, Kol Düğmesi) katille yüzleşme vakti geldi. Arkadan yaklaşan adım seslerini duyuyorsun...",
+hakim_tepki_saldiri: {
+title: "HAKİMİN SALDIRISI",
+tension: "QTE ANI",
+text: "Hakim çekmecesinden çıkardığı silahı aniden deden Ruhan'a doğrultuyor! 'Seni ikinci kez mezara göndereceğim!' diye bağırıyor!",
 action: () => {},
 choices: [
-{ text: "⚖️ Delilleri sun ve Hakim'i adalete teslim et (Resmi Adalet Sonu)", next: "son_resmi_adalet" },
-{ text: "🗡️ Adaleti kendi ellerine alıp katille hesaplaş (İntikam Sonu)", next: "son_intikam_tuzagi" },
-{ text: "💸 Delilleri saklayıp Hakim'le anlaş (İhanet Sonu)", next: "son_kacis_ve_ihanet" },
-{ text: "🏃‍♂️ Korkup kasabadan kaç (Kötü Son)", next: "son_korkak_kacis" }
+{ text: "⚡ Hakim'in eline atılmak için HIZLICA TIKla! (QTE Başlat)", next: "qte_hakim_saldiri" }
 ]
+},
+// QTE Başlangıç Noktaları
+qte_hakim_saldiri: {
+title: "HIZLI TEPKİ GEREKLİ",
+tension: "ÖLÜM KALIM",
+action: () => {
+startQTE("HAKİM ATEŞ ETMEDEN ÖNCE SİLAHA ATLAYIN!", 3.0, "hakim_alt_etme", "hakim_qte_basarisiz");
+},
+choices: []
+},
+hakim_alt_etme: {
+title: "BAŞARILI HAMLE",
+tension: "ZAFER ANI",
+text: "Şimşek gibi öne atılıp Hakim'in bileğini yakaladın ve silahı etkisiz hale getirdin! Deden Ruhan hemen arkandan gelerek Hakim'i duvara sabitledi. Zekan ve hızın sayesinde hayat kurtardın!",
+action: () => {
+if(!inventory.includes("Hakim Suçüstü")) inventory.push("Hakim Suçüstü");
+},
+choices: [
+{ text: "⚖️ Jandarmayı çağır ve Hakim'i adalete teslim et (Mutlu Son)", next: "son_resmi_adalet" },
+{ text: "🗡️ Fabrikaya gidip tüm ekiple büyük hesaplaşmayı yap", next: "fabrika_baskin_giris" }
+]
+},
+hakim_qte_basarisiz: {
+title: "ZAMAN AŞIMI",
+tension: "YARALANMA",
+text: "Çok yavaş davrandın! Hakim tetiği çekti ancak deden Ruhan son anda senin önüne atılarak kurşunu omzuna aldı! Neyse ki deden ölmedi ama yaralandı. Şimdi acele etmelisin!",
+action: () => {},
+choices: [
+{ text: "Hemen jandarmayı çağırıp Hakim'i tutuklat", next: "son_resmi_adalet" }
+]
+},
+fabrika_baskin_giris: {
+title: "MEKAN: ESKİ FABRİKA BASKINI",
+tension: "SON HESAPLAŞMA",
+text: "Deden Ruhan ile birlikte eski zeytinyağı fabrikasının demir kapısını kollarınızla itip içeri giriyorsunuz. İçeride suç ortakları sizi bekliyor.",
+action: () => {},
+choices: [
+{ text: "⚡ Pusuya düşen gruba karşı HIZLICA harekete geç! (QTE Başlat)", next: "qte_fabrika_baskin" },
+{ text: "⚖️ Delilleri sunarak ve dedenle iş birliği yaparak operasyonu tamamla", next: "son_resmi_adalet" }
+]
+},
+qte_fabrika_baskin: {
+title: "FABRİKA PUSUSU",
+tension: "AKSİYON",
+action: () => {
+startQTE("ÜZERİNİZE GELEN SALDIRGANI SAVUŞTURUN!", 2.5, "son_resmi_adalet", "son_resmi_adalet");
+},
+choices: []
 },
 /* SONLAR */
 son_resmi_adalet: {
-title: "SON I: ADALETİN TERTEMİZ ZAFERİ",
-tension: "HUZURLU HAKİKAT",
-text: "Topladığın terzi itirafı ve not defteri sayesinde jandarmayı harekete geçirdin. Hakim suçüstü yakalanarak tutuklandı. Dedenin ruhu huzura erdi. Sen ise efsanevi bir dedektif olarak kasabadan ayrıldın. Oyunu kazandın!",
-action: () => {},
-choices: [{ text: "🔄 Oyunu Baştan Başlat", next: "start" }]
-},
-son_intikam_tuzagi: {
-title: "SON II: GÖZE GÖZ, DİŞE DİŞ",
-tension: "KARANLIK HESAPLAŞMA",
-text: "Resmi adaleti beklemeyip fabrikanın karanlığında intikamını aldın. Katil cezasını buldu ancak bu zafer senin ruhunda silinmez izler bıraktı. Oyunu tamamladın!",
-action: () => {},
-choices: [{ text: "🔄 Oyunu Baştan Başlat", next: "start" }]
-},
-son_kacis_ve_ihanet: {
-title: "SON III: SESSİZ ORTAKLIK VE SUÇLULUK",
-tension: "AĞIR BEDEL",
-text: "Güçlü insanlarla masaya oturup susma payını kabul ettin. Cebin doldu ama vicdanın karardı. Kasabadan ayrılırken arkana baktığında sadece pişmanlık vardı. Oyunu bitirdin.",
-action: () => {},
-choices: [{ text: "🔄 Oyunu Baştan Başlat", next: "start" }]
-},
-son_korkak_kacis: {
-title: "SON IV: UNUTULUŞ VE KORKU",
-tension: "PİŞMANLIK",
-text: "Tehlikeyi göze alamayıp ilk otobüsle kasabadan kaçtın. Dedenin katili elini kolunu sallayarak gezip sırrı mezara götürdü. Oyunu kaybettin.",
+title: "MUTLAK SON: DEDENLE OMUZ OMUZA ADALET",
+tension: "HUZURLU ZAFER",
+text: "Topladığınız deliller, terzi itirafı ve deden Ruhan'ın sağ salim yanınızda durması sayesinde jandarma baskınıyla Hakim ve tüm çete çökertildi. Kasabada adalet yeniden sağlandı. Sen ve deden bu hikayenin kahramanları olarak efsaneleştiniz. Oyunu kazandın!",
 action: () => {},
 choices: [{ text: "🔄 Oyunu Baştan Başlat", next: "start" }]
 }
@@ -345,11 +442,14 @@ if (scene.action) scene.action();
 document.getElementById("chapterTitle").innerText = scene.title;
 document.getElementById("tensionMeter").innerText = "ATMOSFER: " + scene.tension;
 document.getElementById("storyText").innerText = scene.text;
+if(sceneKey !== "qte_hakim_saldiri" && sceneKey !== "qte_fabrika_baskin") {
 speakText(scene.text);
+}
 let invText = inventory.length > 0 ? inventory.join(", ") : "Boş";
 document.getElementById("inventoryBar").innerText = "ÇANTAN: [ " + invText + " ]";
 const choicesArea = document.getElementById("choicesArea");
 choicesArea.innerHTML = "";
+if (scene.choices && scene.choices.length > 0) {
 scene.choices.forEach(choice => {
 const btn = document.createElement("button");
 btn.className = "choice-btn";
@@ -357,6 +457,7 @@ btn.innerText = choice.text;
 btn.onclick = () => renderScene(choice.next);
 choicesArea.appendChild(btn);
 });
+}
 }
 renderScene("start");
 </script>
