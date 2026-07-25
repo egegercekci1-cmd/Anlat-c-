@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Ege Gizemi - Ortak Dedektiflik & Quick Time Event Sürümü</title>
+<title>Ege Gizemi - Kesintisiz Sürüm</title>
 <style>
 :root {
 --bg-color: #0c0f0e;
@@ -133,14 +133,13 @@ border-color: var(--accent-green);
 transform: translateY(-2px);
 box-shadow: 0 6px 12px rgba(52,211,153,0.15);
 }
-/* Telltale Tarzı QTE (Hızlı Tıklama) Stilleri */
 .qte-overlay {
 position: absolute;
 top: 0;
 left: 0;
 width: 100%;
 height: 100%;
-background: rgba(12, 15, 14, 0.92);
+background: rgba(12, 15, 14, 0.95);
 display: flex;
 flex-direction: column;
 align-items: center;
@@ -206,20 +205,13 @@ transform: scale(0.9);
 </div>
 </div>
 <div class="inventory-bar" id="inventoryBar">ÇANTAN: [ Boş ]</div>
-<div class="screen-area" id="storyText">
-Hikaye yükleniyor...
-</div>
+<div class="screen-area" id="storyText">Oyun başlatılıyor...</div>
 <div class="choices-area" id="choicesArea"></div>
 </div>
 <script>
 let inventory = [];
 let currentText = "";
 let isPaused = false;
-let interrogationState = {
-muhtar: { talked: false, suspicious: false },
-terzi: { talked: false, confessed: false },
-hakim: { talked: false, nervous: false }
-};
 function speakText(text) {
 currentText = text;
 if ('speechSynthesis' in window) {
@@ -254,9 +246,10 @@ isPaused = false;
 speakText(currentText);
 }
 }
-// Telltale Tarzı Hızlı Tıklama (QTE) Fonksiyonu
 function startQTE(promptText, durationSeconds, successNextScene, failNextScene) {
+if ('speechSynthesis' in window) {
 window.speechSynthesis.cancel();
+}
 const screenArea = document.getElementById("storyText");
 const choicesArea = document.getElementById("choicesArea");
 choicesArea.innerHTML = "";
@@ -298,7 +291,7 @@ choices: [
 },
 olay_yeri: {
 title: "MEKAN: DEDENİN EVİ",
-tension: "BABAOĞUL / DEDEDEN TORUNA ORTAKLIK",
+tension: "DEDEDEN TORUNA ORTAKLIK",
 text: "Taş evin salonunda deden Ruhan çayını yudumlarken masadaki belgeleri inceliyor. 'Evlat, yıllar önce Müftü cinayetini ben de araştırıyordum ama Hakim beni zehirlemeye kalktı. Şimdi birlikte bu işi bitireceğiz' diyor. Masada dedenin gizli notları ve gümüş kol düğmesi duruyor.",
 action: () => {
 if(!inventory.includes("Polis Not Defteri")) inventory.push("Polis Not Defteri");
@@ -323,8 +316,8 @@ choices: [
 muhtar_sorgu_menu: {
 title: "SORGU: MUHTAR İSMAİL",
 tension: "GERGİN DİYALOG",
-text: "Yanında deden Ruhan'ı canlı ve kanlı canlı görünce Muhtar İsmail'in rengi sararıyor! Ağzı açık kalıyor. Deden Ruhan sert bir sesle, 'Şaşırdın değil mi İsmail?' diyor.",
-action: () => { interrogationState.muhtar.talked = true; },
+text: "Yanında deden Ruhan'ı canlı kanlı görünce Muhtar İsmail'in rengi sararıyor! Ağzı açık kalıyor. Deden Ruhan sert bir sesle, 'Şaşırdın değil mi İsmail?' diyor.",
+action: () => {},
 choices: [
 { text: "🗣️ Sorgula: 'Cinayet gecesi Hakim ile ne konuştunuz?'", next: "muhtar_itiraf_2" },
 { text: "🔙 Kasaba Merkezine Dön", next: "start" }
@@ -335,7 +328,6 @@ title: "MUHTARIN İTİRAFI",
 tension: "KORKU DOLU İTİRAF",
 text: "Muhtar kekeleyerek: 'R... Ruhan hoca! Sen ölmemiş miydin? Tamam anlatıyorum! Hakim beni tehdit etti, cinayeti örtbas etmezsem fabrikayı başıma yıkarım dedi!'",
 action: () => {
-interrogationState.muhtar.suspicious = true;
 if(!inventory.includes("Muhtarın İtirafı")) inventory.push("Muhtarın İtirafı");
 },
 choices: [{ text: "Devam Et", next: "muhtar_sorgu_menu" }]
@@ -344,7 +336,7 @@ terzi_sorgu_menu: {
 title: "SORGU: ESKİ TERZİ",
 tension: "TİTRERKEN",
 text: "Terzi dükkanında dedeni görünce elleri titremeye başlıyor. Gümüş kol düğmesini masaya koyuyorsunuz.",
-action: () => { interrogationState.terzi.talked = true; },
+action: () => {},
 choices: [
 { text: "🔍 Kanıt Göster: Kol düğmesinin Hakim'e ait olduğunu onaylat.", next: "terzi_itiraf" },
 { text: "🔙 Kasaba Merkezine Dön", next: "start" }
@@ -355,7 +347,6 @@ title: "TERZİNİN İTİRAFI",
 tension: "KESİN KANIT",
 text: "Terzi: 'Evet, evet! Bu düğme Hakim beyin ceketine ait. Fabrikadaki buluşmaya giderken benden diktirmişti!'",
 action: () => {
-interrogationState.terzi.confessed = true;
 if(!inventory.includes("Terzi İtirafı")) inventory.push("Terzi İtirafı");
 },
 choices: [{ text: "Devam Et", next: "start" }]
@@ -364,22 +355,12 @@ hakim_sorgu_menu: {
 title: "SORGU: HAKİM",
 tension: "TEHLİKELİ ZİRVE",
 text: "Adliye odasına dedenle birlikte girdiğinizde Hakim ayağa kalkıyor. Karşısında hayalet görmüş gibi dönüp kalıyor, ardından çılgına dönüyor.",
-action: () => { interrogationState.hakim.talked = true; },
+action: () => {},
 choices: [
-{ text: "🗣️ Suçla: 'Oyun bitti Hakim, terzi ve muhtar her şeyi ötü!'", next: "hakim_tepki_saldiri" },
+{ text: "🗣️ Suçla: 'Oyun bitti Hakim, terzi ve muhtar her şeyi ötü!'", next: "qte_hakim_saldiri" },
 { text: "🔙 Kasaba Merkezine Dön", next: "start" }
 ]
 },
-hakim_tepki_saldiri: {
-title: "HAKİMİN SALDIRISI",
-tension: "QTE ANI",
-text: "Hakim çekmecesinden çıkardığı silahı aniden deden Ruhan'a doğrultuyor! 'Seni ikinci kez mezara göndereceğim!' diye bağırıyor!",
-action: () => {},
-choices: [
-{ text: "⚡ Hakim'in eline atılmak için HIZLICA TIKla! (QTE Başlat)", next: "qte_hakim_saldiri" }
-]
-},
-// QTE Başlangıç Noktaları
 qte_hakim_saldiri: {
 title: "HIZLI TEPKİ GEREKLİ",
 tension: "ÖLÜM KALIM",
@@ -396,7 +377,7 @@ action: () => {
 if(!inventory.includes("Hakim Suçüstü")) inventory.push("Hakim Suçüstü");
 },
 choices: [
-{ text: "⚖️ Jandarmayı çağır ve Hakim'i adalete teslim et (Mutlu Son)", next: "son_resmi_adalet" },
+{ text: "⚖️ Jandarmayı çağır ve Hakim'elic teslim et (Mutlu Son)", next: "son_resmi_adalet" },
 { text: "🗡️ Fabrikaya gidip tüm ekiple büyük hesaplaşmayı yap", next: "fabrika_baskin_giris" }
 ]
 },
@@ -415,8 +396,8 @@ tension: "SON HESAPLAŞMA",
 text: "Deden Ruhan ile birlikte eski zeytinyağı fabrikasının demir kapısını kollarınızla itip içeri giriyorsunuz. İçeride suç ortakları sizi bekliyor.",
 action: () => {},
 choices: [
-{ text: "⚡ Pusuya düşen gruba karşı HIZLICA harekete geç! (QTE Başlat)", next: "qte_fabrika_baskin" },
-{ text: "⚖️ Delilleri sunarak ve dedenle iş birliği yaparak operasyonu tamamla", next: "son_resmi_adalet" }
+{ text: "⚡ Pusuya düşen gruba karşı HIZLICA harekete geç! (QTE)", next: "qte_fabrika_baskin" },
+{ text: "⚖️ Delilleri sunarak ve dedenle operasyonu tamamla", next: "son_resmi_adalet" }
 ]
 },
 qte_fabrika_baskin: {
@@ -427,7 +408,6 @@ startQTE("ÜZERİNİZE GELEN SALDIRGANI SAVUŞTURUN!", 2.5, "son_resmi_adalet", 
 },
 choices: []
 },
-/* SONLAR */
 son_resmi_adalet: {
 title: "MUTLAK SON: DEDENLE OMUZ OMUZA ADALET",
 tension: "HUZURLU ZAFER",
@@ -438,6 +418,7 @@ choices: [{ text: "🔄 Oyunu Baştan Başlat", next: "start" }]
 };
 function renderScene(sceneKey) {
 const scene = gameData[sceneKey];
+if (!scene) return;
 if (scene.action) scene.action();
 document.getElementById("chapterTitle").innerText = scene.title;
 document.getElementById("tensionMeter").innerText = "ATMOSFER: " + scene.tension;
@@ -459,7 +440,10 @@ choicesArea.appendChild(btn);
 });
 }
 }
+// Sayfa yüklenir yüklenmez oyunu başlat
+window.onload = () => {
 renderScene("start");
+};
 </script>
 </body>
 </html>
