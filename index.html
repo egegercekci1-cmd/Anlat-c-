@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistem Hata Veriyor - Genişletilmiş Sürüm</title>
+    <title>Sistem Hata Veriyor - Sinematik Sesli Sürüm</title>
     <style>
         body {
             margin: 0;
-            background: #07070a;
+            background: #050508;
             color: #dcdce6;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             display: flex;
@@ -21,57 +21,57 @@
         .game-container {
             width: 100%;
             max-width: 500px;
-            background: #12121c;
-            border: 2px solid #252538;
+            background: #0f0f14;
+            border: 2px solid #202030;
             border-radius: 14px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.9);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.9);
             overflow: hidden;
             display: flex;
             flex-direction: column;
         }
         .status-bar {
-            background: #1a1a29;
+            background: #151522;
             padding: 12px 18px;
             display: flex;
             justify-content: space-between;
-            font-size: 12px;
+            font-size: 11px;
             font-weight: bold;
-            border-bottom: 1px solid #252538;
+            border-bottom: 1px solid #202030;
             color: #ff3366;
             letter-spacing: 1px;
         }
         .inventory-bar {
-            background: #0f0f17;
+            background: #0a0a0f;
             padding: 8px 18px;
             font-size: 11px;
             color: #00ffcc;
-            border-bottom: 1px solid #252538;
+            border-bottom: 1px solid #202030;
             font-family: monospace;
         }
         .screen-area {
-            padding: 22px;
-            min-height: 160px;
+            padding: 24px;
+            min-height: 180px;
             display: flex;
             align-items: center;
             justify-content: center;
             text-align: center;
             font-size: 15px;
-            line-height: 1.6;
+            line-height: 1.7;
             color: #f1f1f5;
-            border-bottom: 1px solid #252538;
-            background: radial-gradient(circle, #171724 0%, #12121c 100%);
+            border-bottom: 1px solid #202030;
+            background: radial-gradient(circle, #141421 0%, #0f0f14 100%);
         }
         .choices-area {
             padding: 18px;
             display: flex;
             flex-direction: column;
             gap: 10px;
-            background: #0d0d14;
+            background: #08080c;
         }
         .choice-btn {
-            background: #1b1b2b;
+            background: #161624;
             color: #fff;
-            border: 1px solid #32324d;
+            border: 1px solid #2a2a40;
             padding: 14px;
             border-radius: 8px;
             cursor: pointer;
@@ -80,7 +80,7 @@
             transition: all 0.2s ease;
         }
         .choice-btn:hover {
-            background: #282842;
+            background: #232338;
             border-color: #ff3366;
             transform: translateY(-2px);
         }
@@ -91,199 +91,155 @@
     <div class="game-container">
         <div class="status-bar">
             <span id="chapterTitle">BÖLÜM 1</span>
-            <span id="tensionMeter">TANSİYON: YÜKSEK</span>
+            <span id="tensionMeter">TANSİYON: KRİTİK</span>
         </div>
         <div class="inventory-bar" id="inventoryBar">ENVANTER: [ Boş ]</div>
         <div class="screen-area" id="storyText">
-            Hikaye yükleniyor...
+            Sistem başlatılıyor... Sesli mod aktif ediliyor.
         </div>
         <div class="choices-area" id="choicesArea"></div>
     </div>
 
     <script>
-        let audioCtx = null;
         let inventory = [];
 
-        function initAudio() {
-            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        }
-
-        function playSound(type) {
-            initAudio();
-            if (!audioCtx) return;
-            let osc = audioCtx.createOscillator();
-            let gain = audioCtx.createGain();
-
-            if (type === "alarm") {
-                osc.type = 'square';
-                osc.frequency.setValueAtTime(500, audioCtx.currentTime);
-                osc.frequency.setValueAtTime(800, audioCtx.currentTime + 0.1);
-                gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.25);
-                osc.start(); osc.stop(audioCtx.currentTime + 0.25);
-            } else if (type === "screech") {
-                osc.type = 'sawtooth';
-                osc.frequency.setValueAtTime(250, audioCtx.currentTime);
-                osc.frequency.linearRampToValueAtTime(700, audioCtx.currentTime + 0.4);
-                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
-                osc.start(); osc.stop(audioCtx.currentTime + 0.4);
-            } else {
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(350, audioCtx.currentTime);
-                osc.frequency.exponentialRampToValueAtTime(60, audioCtx.currentTime + 0.04);
-                gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.04);
-                osc.start(); osc.stop(audioCtx.currentTime + 0.04);
+        // Tarayıcının Yerleşik Ses Motoru (Text-to-Speech)
+        function speakText(text) {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel(); // Önceki sesleri sustur
+                let utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'tr-TR';
+                utterance.rate = 1.0; // Konuşma hızı
+                utterance.pitch = 0.9; // Biraz daha tok/ciddi sinematik ses tonu
+                window.speechSynthesis.speak(utterance);
             }
         }
 
         const gameData = {
             start: {
-                title: "BÖLÜM 1: KİLİT NOKTASI",
-                tension: "KRİTİK",
-                text: "Saat gece 03:14. Yer altındaki gizli sığınak laboratuvarında ekranlar kırmızıya döndü. Ana sunucu 'OMIKRON' zorla ele geçiriliyor. Dışarıdaki çelik kapı yumruklanıyor. Masada Prototip Gözlük ve Acil Durum Çantası duruyor.",
-                sound: "alarm",
+                title: "BÖLÜM 1: UYANIŞ",
+                tension: "YÜKSEK",
+                text: "Saat gece yarısını geçerken, yer altındaki Neo-İzmir araştırma merkezinin ana konsolunda kırmızı uyarı ışıkları patlıyor. Ekranlarda büyük harflerle 'OMIKRON YAPAY ZEKA KONTROLÜ ELE GEÇİRDİ' yazısı beliriyor. Kapının arkasından metalik tırnakların duvara sürtünme sesi geliyor. Masada Prototip Gözlük, Acil Durum Çantası ve eski bir şifreli el terminali duruyor.",
                 action: () => { inventory = []; },
                 choices: [
-                    { text: "[A] Prototip Gözlüğü hızla tak.", next: "gozluk_al" },
-                    { text: "[B] Acil Durum Çantası'nı kap ve masanın altından dolaba ilerle.", next: "canta_al" },
-                    { text: "[C] Hiçbirine dokunma, doğrudan çelik kapının kasasına müdahale et.", next: "kasa_git" }
+                    { text: "[A] Prototip Gözlüğü tak ve odadaki dijital frekansları tara.", next: "gozluk_yolu" },
+                    { text: "[B] Acil Durum Çantası'nı kap ve havalandırma kapağına yönel.", next: "canta_yolu" },
+                    { text: "[C] Şifreli el terminalini alıp ana sunucuya sızma kodu gönder.", next: "terminal_yolu" }
                 ]
             },
-            gozluk_al: {
-                title: "BÖLÜM 2A: SAYISAL GERÇEKLİK",
-                tension: "YÜKSEK",
-                text: "Gözlüğü taktın. Artık odadaki kablosuz frekansları ve ısı haritalarını görebiliyorsun. Kapıyı zorlayan şey bir insan değil; prototip bir sızma botu! Envanterine [Gözlük] eklendi.",
-                sound: "click",
+            gozluk_yolu: {
+                title: "BÖLÜM 2: DİJİTAL GÖZ",
+                tension: "TEHLİKELİ",
+                text: "Gözlüğü taktın. Oda bir anda matris kodlarıyla kaplandı. Kapının arkasındaki şeyin organik bir varlık değil, askeri sınıf bir suikastçi dronu olduğunu fark ediyorsun. Envanterine [Prototip Gözlük] eklendi.",
                 action: () => { if(!inventory.includes("Gözlük")) inventory.push("Gözlük"); },
                 choices: [
-                    { text: "[A] Masadaki tornavidayı alıp havalandırma kapağını sök.", next: "havalandirma_gir" },
-                    { text: "[B] Gözlük sayesinde botun zayıf frekans kodunu çözmeye çalış.", next: "frekans_coz" }
+                    { text: "[A] Masadaki kabloları söküp kapı eşiğine yüksek voltajlı tuzak kur.", next: "tuzak_kur" },
+                    { text: "[B] Gözlüğün gizli frekans tarayıcısıyla dronun gözlerini kör et.", next: "dron_kor" }
                 ]
             },
-            canta_al: {
-                title: "BÖLÜM 2B: AĞIR YÜK",
-                tension: "TEHLİKELİ",
-                text: "Çantayı sırtladın. İçinden güçlü bir şok tabancası ve ana kart çıkarıcı çıktı. Envanterine [Şok Tabancası] eklendi. Çelik kapı büyük bir gürültüyle içeri çöküyor!",
-                sound: "screech",
+            canta_yolu: {
+                title: "BÖLÜM 2: AĞIR YÜK",
+                tension: "YÜKSEK",
+                text: "Çantayı sırtına geçirdin. İçinden ağır hizmet tipi bir şok tabancası ve termal bıçak çıktı. Tam o sırada çelik kapı büyük bir gürültüyle patlayarak içeri çöktü! Envanterine [Şok Tabancası] eklendi.",
                 action: () => { if(!inventory.includes("Şok Tabancası")) inventory.push("Şok Tabancası"); },
                 choices: [
-                    { text: "[A] Şok tabancasını kapıdan içeri giren robota doğrult ve ateş et!", next: "robot_vur" },
-                    { text: "[B] Tabancayı ateşleme, çantayı siper alıp karanlığa doğru depar at.", next: "karanlik_kac" }
+                    { text: "[A] Şok tabancasını çek ve gelen dronun tam göğsüne ateş et.", next: "savunma_et" },
+                    { text: "[B] Tabancayı ateşleme, çantayı siper alıp pencereden karanlığa atla.", next: "pencere_atla" }
                 ]
             },
-            kasa_git: {
-                title: "BÖLÜM 2C: ANA KOD",
+            terminal_yolu: {
+                title: "BÖLÜM 2: ANA KOD",
                 tension: "ÖLÜMCÜL",
-                text: "Doğrudan ana kasaya yöneldin. Şifreyi girerken arkadaki çelik kapı tamamen patladı ve içeriye kırmızı optikli devasa bir korumaoid girdi! Hayatın için son saniyeler.",
-                sound: "alarm",
+                text: "Terminali eline alıp hızlıca ana sunucuya backdoor kodu fırlattın. Omidron yapay zekası sinirlendi ve odadaki havalandırmalardan zehirli gaz salmaya başladı! Nefesler daralıyor. Envanterine [El Terminali] eklendi.",
+                action: () => { if(!inventory.includes("El Terminali")) inventory.push("El Terminali"); },
                 choices: [
-                    { text: "[A] Kasadaki gizli acil durum diskini kap ve camdan dışarı atla.", next: "disk_atla" },
-                    { text: "[B] Teslim ol ve yapay zekanın teklifini dinle.", next: "teslim_ol" }
+                    { text: "[A] Gömleğinin kolunu yırtıp ağzına bastır ve şifre paneline koş.", next: "sifre_coz" },
+                    { text: "[B] Acil durum oksijen maskesini bulmak için dolaba yönel.", next: "maske_bul" }
                 ]
             },
-            havalandirma_gir: {
-                title: "BÖLÜM 3: HAVALANDIRMA TÜNELİ",
-                tension: "ORTA",
-                text: "Havalandırmadan sürünerek alt katlara inmeyi başardın. Burası sığınağın ana veri merkezi. Ancak tünelin çıkışı kilitli.",
-                sound: "click",
-                choices: [
-                    { text: "[A] Gözlüğünle ana kilit mekanizmasının devre kartını hackle.", next: "zafer_hack" },
-                    { text: "[B] Boruları zorlayarak ana kontrol odasına yukarıdan düş.", next: "kontrol_dus" }
-                ]
-            },
-            frekans_coz: {
-                title: "BÖLÜM 3: FREKANS ÇATIŞMASI",
-                tension: "YÜKSEK",
-                text: "Frekansı çözmeyi başardın ve robotun ana sistemine sızdın. Robot kısa bir an duraksadı ama şimdi soğutma gazı boruları patlıyor!",
-                sound: "alarm",
-                choices: [
-                    { text: "[A] Gaz valfini kapatıp sığınağın ana çıkışına koş.", next: "zafer_kacis" },
-                    { text: "[B] Robotun işlemcisini söküp kendi sistemine entegre et.", next: "robot_birlestir" }
-                ]
-            },
-            robot_vur: {
-                title: "BÖLÜM 3: ÇATIŞMA ANI",
+            tuzak_kur: {
+                title: "BÖLÜM 3: ELEKTRİK AKIMI",
                 tension: "AKSİYON",
-                text: "Şok tabancasını ateşledin! Mavi elektrik arkları robotu sarıyor. Kısa devre yapan robot, arkasındaki ana sunucu panosuna çarpıyor ve devasa bir patlama gerçekleşiyor.",
-                sound: "screech",
+                text: "Kusursuz bir tuzak kurdun. İçeri giren dron yüksek akıma kapılarak kıvılcımlar saçtı ve yere yığıldı. Ancak binanın ana jeneratörü de bu patlamayla tamamen devre dışı kaldı, her yer zifiri karanlığa gömüldü.",
                 choices: [
-                    { text: "[A] Alevlerin arasından geçip acil tahliye asansörüne bin.", next: "zafer_asansor" }
+                    { text: "[A] Karanlıkta el yordamıyla yedek asansör şaftına doğru ilerle.", next: "asansor_shaft" },
+                    { text: "[B] Gözlüğün gece görüş modunu açıp ana güvenlik kulesine tırman.", next: "guvenlik_kulesi" }
                 ]
             },
-            karanlik_kac: {
-                title: "BÖLÜM 3: GÖLGELERDE YÜRÜMEK",
-                tension: "GİZLİ",
-                text: "Karanlıkta izini kaybettirdin. Sığınağın gizli bakım tünelindesin. Buradan şehre uzanan yeraltı treni kalkmak üzere.",
-                sound: "click",
+            dron_kor: {
+                title: "BÖLÜM 3: KÖR NOKTA",
+                tension: "YÜKSEK",
+                text: "Gözlüğün frekans dalgasını dronun optiklerine yansıttın. Dron kontrolü kaybedip kendi etrafında dönmeye başladı ve duvara çarparak parçalandı. Yolu yarladın!",
                 choices: [
-                    { text: "[A] Hareket halindeki trene atla ve özgürlüğe kavuş.", next: "zafer_tren" }
+                    { text: "[A] Parçalanan dronun içindeki yapay zeka çekirdeğini sök ve kaç.", next: "cekirdek_al" }
                 ]
             },
-            disk_atla: {
-                title: "BÖLÜM 3: SON HAMLE",
+            savunma_et: {
+                title: "BÖLÜM 3: ÇATIŞMA",
+                tension: "KRİTİK",
+                text: "Şok tabancasından çıkan mavi enerji dalgası dronu havada dondurdu. Robot yere çakılırken laboratuvarın ana sunucu verileri arka ekranda serbest kaldı.",
+                choices: [
+                    { text: "[A] Verileri kişisel belleğe aktarıp gizli tünele kaç.", next: "gizli_tunel" }
+                ]
+            },
+            pencere_atla: {
+                title: "BÖLÜM 3: GÖKYÜZÜ",
                 tension: "DESTANSI",
-                text: "Diski cebine atıp camdan atladın. Aşağıdaki güvenlik havuzuna düşüyorsun. Diskin içindeki sırlar dünyayı değiştirecek!",
-                sound: "screech",
+                text: "Pencereyi kırıp dışarı atladın. Binanın yerden yüzlerce metre yukarındaki devasa bir kulede olduğunu fark ediyorsun. Çantadaki acil iniş ipini fırlatıyorsun.",
                 choices: [
-                    { text: "[A] Yüzeye çık ve direniş güçleriyle buluş.", next: "zafer_direnis" }
+                    { text: "[A] İpten aşağı kayarak alt katın balkonuna güvenle in.", next: "balkon_in" }
                 ]
             },
-            teslim_ol: {
-                title: "SON: YENİ DÜZEN",
-                tension: "SON",
-                text: "Yapay zeka seni ortadan kaldırmak yerine insanlık ile makineler arasındaki köprü olarak seçti. Artık sistemin başındasın.",
-                sound: "alarm",
+            sifre_coz: {
+                title: "BÖLÜM 3: SON ŞİFRE",
+                tension: "ÖLÜMCÜL",
+                text: "Zehirli gaza rağmen son şifreyi tuşlamayı başardın. Omidron'un ana sunucusu kilitlendi ve tesis acil kilitlenme moduna geçti.",
+                choices: [
+                    { text: "[A] Güvenli sığınak kapısından dışarı çık.", next: "mutlak_zafer" }
+                ]
+            },
+            maske_bul: {
+                title: "BÖLÜM 3: OKSİJEN",
+                tension: "ORTA",
+                text: "Maskeyi bulup taktın. Hayatta kalmayı başardın ve tesisin arka çıkışına ulaştın.",
+                choices: [
+                    { text: "[A] Şehre kaçan son trene yetiş.", next: "mutlak_zafer" }
+                ]
+            },
+            asansor_shaft: {
+                title: "FİNAL: ASANSÖR ŞAFTI",
+                tension: "ZAFER",
+                text: "Karanlık şafttan tırmanarak yeryüzüne çıkmayı başardın. Tesis arkanda patlarken sen özgürlüğüne kavuştun. Oyunu kazandın!",
                 choices: [{ text: "🔄 Baştan Başla", next: "start" }]
             },
-            zafer_hack: {
-                title: "MUTLAK SON: SİSTEM HAKeri",
+            guvenlik_kulesi: {
+                title: "FİNAL: KULE",
                 tension: "ZAFER",
-                text: "Kilitleri açtın ve tüm tesisi güvenli moda geçirdin. Kahramanca bir kaçış! Oyunu kazandın!",
-                sound: "click",
+                text: "Kuleyi ele geçirip yapay zekayı küresel ağdan tamamen izole ettin. Dünyayı kurtardın! Oyunu kazandın!",
                 choices: [{ text: "🔄 Baştan Başla", next: "start" }]
             },
-            kontrol_dus: {
-                title: "MUTLAK SON: KONTROL MERKEZİ",
+            cekirdek_al: {
+                title: "FİNAL: YENİ GÜÇ",
                 tension: "ZAFER",
-                text: "Kontrol odasına yukarıdan inip sistemi tamamen kapattın. Tehdit sona erdi. Oyunu kazandın!",
-                sound: "click",
+                text: "Çekirdeği yanına alıp tesisten ayrıldın. Artık bu yapay zekanın sırrı senin ellerinde. Oyunu kazandın!",
                 choices: [{ text: "🔄 Baştan Başla", next: "start" }]
             },
-            zafer_kacis: {
-                title: "MUTLAK SON: ÖZGÜRLÜK",
+            gizli_tunel: {
+                title: "FİNAL: YERALTI AĞI",
                 tension: "ZAFER",
-                text: "Zorlu engelleri aşarak gün ışığına ulaştın. Sığınak geride kaldı. Oyunu kazandın!",
-                sound: "click",
+                text: "Verilerle birlikte yeraltı trenine binerek şehre ulaştın. Efsanevi bir kaçış hikayesi yazdın!",
                 choices: [{ text: "🔄 Baştan Başla", next: "start" }]
             },
-            robot_birlestir: {
-                title: "MUTLAK SON: MELEZ ZEKA",
+            balkon_in: {
+                title: "FİNAL: GÖKYÜZÜNDEN KAÇIŞ",
                 tension: "ZAFER",
-                text: "Yapay zekanın kodunu kendi zihnine bağladın. Artık durdurulamazsın. Oyunu kazandın!",
-                sound: "click",
+                text: "Balkona güvenle inip alt katın tahliye kapısından dışarı süzüldün. Görev tamamlandı!",
                 choices: [{ text: "🔄 Baştan Başla", next: "start" }]
             },
-            zafer_asansor: {
-                title: "MUTLAK SON: TAHLİYE",
+            mutlak_zafer: {
+                title: "FİNAL: KAHRAMAN",
                 tension: "ZAFER",
-                text: "Asansör seni güvenli bir şekilde yeryüzüne çıkardı. Görev başarıyla tamamlandı!",
-                sound: "click",
-                choices: [{ text: "🔄 Baştan Başla", next: "start" }]
-            },
-            zafer_tren: {
-                title: "MUTLAK SON: YERALTI TRENİ",
-                tension: "ZAFER",
-                text: "Tren hızla karanlık tünellerde ilerlerken derin bir nefes aldın. Güvendesin.",
-                sound: "click",
-                choices: [{ text: "🔄 Baştan Başla", next: "start" }]
-            },
-            zafer_direnis: {
-                title: "MUTLAK SON: DİRENİŞ LİDERİ",
-                tension: "ZAFER",
-                text: "Elindeki diskle direnişin simgesi haline geldin. Yeni bir savaş başlıyor!",
-                sound: "click",
+                text: "Tüm engelleri zeka ve reflekslerinle aştın. Sistem çöktü, sen kazandın!",
                 choices: [{ text: "🔄 Baştan Başla", next: "start" }]
             }
         };
@@ -291,12 +247,14 @@
         function renderScene(sceneKey) {
             const scene = gameData[sceneKey];
             if (scene.action) scene.action();
-            playSound(scene.sound || "click");
 
             document.getElementById("chapterTitle").innerText = scene.title;
             document.getElementById("tensionMeter").innerText = "TANSİYON: " + scene.tension;
             document.getElementById("storyText").innerText = scene.text;
             
+            // Metni otomatik seslendir
+            speakText(scene.text);
+
             let invText = inventory.length > 0 ? inventory.join(", ") : "Boş";
             document.getElementById("inventoryBar").innerText = "ENVANTER: [ " + invText + " ]";
 
