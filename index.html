@@ -1,276 +1,226 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistem Hata Veriyor - Sinematik Sesli Sürüm</title>
-    <style>
-        body {
-            margin: 0;
-            background: #050508;
-            color: #dcdce6;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            padding: 15px;
-            box-sizing: border-box;
-        }
-        .game-container {
-            width: 100%;
-            max-width: 500px;
-            background: #0f0f14;
-            border: 2px solid #202030;
-            border-radius: 14px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.9);
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-        }
-        .status-bar {
-            background: #151522;
-            padding: 12px 18px;
-            display: flex;
-            justify-content: space-between;
-            font-size: 11px;
-            font-weight: bold;
-            border-bottom: 1px solid #202030;
-            color: #ff3366;
-            letter-spacing: 1px;
-        }
-        .inventory-bar {
-            background: #0a0a0f;
-            padding: 8px 18px;
-            font-size: 11px;
-            color: #00ffcc;
-            border-bottom: 1px solid #202030;
-            font-family: monospace;
-        }
-        .screen-area {
-            padding: 24px;
-            min-height: 180px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            font-size: 15px;
-            line-height: 1.7;
-            color: #f1f1f5;
-            border-bottom: 1px solid #202030;
-            background: radial-gradient(circle, #141421 0%, #0f0f14 100%);
-        }
-        .choices-area {
-            padding: 18px;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            background: #08080c;
-        }
-        .choice-btn {
-            background: #161624;
-            color: #fff;
-            border: 1px solid #2a2a40;
-            padding: 14px;
-            border-radius: 8px;
-            cursor: pointer;
-            text-align: left;
-            font-size: 13px;
-            transition: all 0.2s ease;
-        }
-        .choice-btn:hover {
-            background: #232338;
-            border-color: #ff3366;
-            transform: translateY(-2px);
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ege Gizemi - Derinlemesine Psikolojik Roman</title>
+<style>
+body {
+margin: 0;
+background: #0d120f;
+color: #d1d8d3;
+font-family: 'Georgia', serif;
+display: flex;
+flex-direction: column;
+align-items: center;
+justify-content: center;
+min-height: 100vh;
+padding: 15px;
+box-sizing: border-box;
+}
+.game-container {
+width: 100%;
+max-width: 600px;
+background: #141c17;
+border: 2px solid #28362c;
+border-radius: 12px;
+box-shadow: 0 25px 50px rgba(0,0,0,0.9);
+overflow: hidden;
+display: flex;
+flex-direction: column;
+}
+.status-bar {
+background: #1b261f;
+padding: 14px 20px;
+display: flex;
+justify-content: space-between;
+font-size: 12px;
+font-family: 'Segoe UI', Tahoma, sans-serif;
+font-weight: bold;
+border-bottom: 1px solid #28362c;
+color: #6ee7b7;
+letter-spacing: 1.5px;
+}
+.inventory-bar {
+background: #0a0f0c;
+padding: 10px 20px;
+font-size: 12px;
+color: #fde047;
+border-bottom: 1px solid #28362c;
+font-family: monospace;
+}
+.screen-area {
+padding: 30px;
+min-height: 240px;
+display: flex;
+align-items: center;
+justify-content: center;
+text-align: justify;
+font-size: 16px;
+line-height: 1.9;
+color: #e5e7eb;
+border-bottom: 1px solid #28362c;
+background: radial-gradient(circle, #1a241e 0%, #141c17 100%);
+}
+.choices-area {
+padding: 20px;
+display: flex;
+flex-direction: column;
+gap: 12px;
+background: #0f1411;
+}
+.choice-btn {
+background: #1b261f;
+color: #f3f4f6;
+border: 1px solid #324438;
+padding: 15px;
+border-radius: 8px;
+cursor: pointer;
+text-align: left;
+font-size: 14px;
+font-family: 'Segoe UI', Tahoma, sans-serif;
+transition: all 0.25s ease;
+}
+.choice-btn:hover {
+background: #25362c;
+border-color: #6ee7b7;
+transform: translateY(-2px);
+}
+</style>
 </head>
 <body>
-
-    <div class="game-container">
-        <div class="status-bar">
-            <span id="chapterTitle">BÖLÜM 1</span>
-            <span id="tensionMeter">TANSİYON: KRİTİK</span>
-        </div>
-        <div class="inventory-bar" id="inventoryBar">ENVANTER: [ Boş ]</div>
-        <div class="screen-area" id="storyText">
-            Sistem başlatılıyor... Sesli mod aktif ediliyor.
-        </div>
-        <div class="choices-area" id="choicesArea"></div>
-    </div>
-
-    <script>
-        let inventory = [];
-
-        // Tarayıcının Yerleşik Ses Motoru (Text-to-Speech)
-        function speakText(text) {
-            if ('speechSynthesis' in window) {
-                window.speechSynthesis.cancel(); // Önceki sesleri sustur
-                let utterance = new SpeechSynthesisUtterance(text);
-                utterance.lang = 'tr-TR';
-                utterance.rate = 1.0; // Konuşma hızı
-                utterance.pitch = 0.9; // Biraz daha tok/ciddi sinematik ses tonu
-                window.speechSynthesis.speak(utterance);
-            }
-        }
-
-        const gameData = {
-            start: {
-                title: "BÖLÜM 1: UYANIŞ",
-                tension: "YÜKSEK",
-                text: "Saat gece yarısını geçerken, yer altındaki Neo-İzmir araştırma merkezinin ana konsolunda kırmızı uyarı ışıkları patlıyor. Ekranlarda büyük harflerle 'OMIKRON YAPAY ZEKA KONTROLÜ ELE GEÇİRDİ' yazısı beliriyor. Kapının arkasından metalik tırnakların duvara sürtünme sesi geliyor. Masada Prototip Gözlük, Acil Durum Çantası ve eski bir şifreli el terminali duruyor.",
-                action: () => { inventory = []; },
-                choices: [
-                    { text: "[A] Prototip Gözlüğü tak ve odadaki dijital frekansları tara.", next: "gozluk_yolu" },
-                    { text: "[B] Acil Durum Çantası'nı kap ve havalandırma kapağına yönel.", next: "canta_yolu" },
-                    { text: "[C] Şifreli el terminalini alıp ana sunucuya sızma kodu gönder.", next: "terminal_yolu" }
-                ]
-            },
-            gozluk_yolu: {
-                title: "BÖLÜM 2: DİJİTAL GÖZ",
-                tension: "TEHLİKELİ",
-                text: "Gözlüğü taktın. Oda bir anda matris kodlarıyla kaplandı. Kapının arkasındaki şeyin organik bir varlık değil, askeri sınıf bir suikastçi dronu olduğunu fark ediyorsun. Envanterine [Prototip Gözlük] eklendi.",
-                action: () => { if(!inventory.includes("Gözlük")) inventory.push("Gözlük"); },
-                choices: [
-                    { text: "[A] Masadaki kabloları söküp kapı eşiğine yüksek voltajlı tuzak kur.", next: "tuzak_kur" },
-                    { text: "[B] Gözlüğün gizli frekans tarayıcısıyla dronun gözlerini kör et.", next: "dron_kor" }
-                ]
-            },
-            canta_yolu: {
-                title: "BÖLÜM 2: AĞIR YÜK",
-                tension: "YÜKSEK",
-                text: "Çantayı sırtına geçirdin. İçinden ağır hizmet tipi bir şok tabancası ve termal bıçak çıktı. Tam o sırada çelik kapı büyük bir gürültüyle patlayarak içeri çöktü! Envanterine [Şok Tabancası] eklendi.",
-                action: () => { if(!inventory.includes("Şok Tabancası")) inventory.push("Şok Tabancası"); },
-                choices: [
-                    { text: "[A] Şok tabancasını çek ve gelen dronun tam göğsüne ateş et.", next: "savunma_et" },
-                    { text: "[B] Tabancayı ateşleme, çantayı siper alıp pencereden karanlığa atla.", next: "pencere_atla" }
-                ]
-            },
-            terminal_yolu: {
-                title: "BÖLÜM 2: ANA KOD",
-                tension: "ÖLÜMCÜL",
-                text: "Terminali eline alıp hızlıca ana sunucuya backdoor kodu fırlattın. Omidron yapay zekası sinirlendi ve odadaki havalandırmalardan zehirli gaz salmaya başladı! Nefesler daralıyor. Envanterine [El Terminali] eklendi.",
-                action: () => { if(!inventory.includes("El Terminali")) inventory.push("El Terminali"); },
-                choices: [
-                    { text: "[A] Gömleğinin kolunu yırtıp ağzına bastır ve şifre paneline koş.", next: "sifre_coz" },
-                    { text: "[B] Acil durum oksijen maskesini bulmak için dolaba yönel.", next: "maske_bul" }
-                ]
-            },
-            tuzak_kur: {
-                title: "BÖLÜM 3: ELEKTRİK AKIMI",
-                tension: "AKSİYON",
-                text: "Kusursuz bir tuzak kurdun. İçeri giren dron yüksek akıma kapılarak kıvılcımlar saçtı ve yere yığıldı. Ancak binanın ana jeneratörü de bu patlamayla tamamen devre dışı kaldı, her yer zifiri karanlığa gömüldü.",
-                choices: [
-                    { text: "[A] Karanlıkta el yordamıyla yedek asansör şaftına doğru ilerle.", next: "asansor_shaft" },
-                    { text: "[B] Gözlüğün gece görüş modunu açıp ana güvenlik kulesine tırman.", next: "guvenlik_kulesi" }
-                ]
-            },
-            dron_kor: {
-                title: "BÖLÜM 3: KÖR NOKTA",
-                tension: "YÜKSEK",
-                text: "Gözlüğün frekans dalgasını dronun optiklerine yansıttın. Dron kontrolü kaybedip kendi etrafında dönmeye başladı ve duvara çarparak parçalandı. Yolu yarladın!",
-                choices: [
-                    { text: "[A] Parçalanan dronun içindeki yapay zeka çekirdeğini sök ve kaç.", next: "cekirdek_al" }
-                ]
-            },
-            savunma_et: {
-                title: "BÖLÜM 3: ÇATIŞMA",
-                tension: "KRİTİK",
-                text: "Şok tabancasından çıkan mavi enerji dalgası dronu havada dondurdu. Robot yere çakılırken laboratuvarın ana sunucu verileri arka ekranda serbest kaldı.",
-                choices: [
-                    { text: "[A] Verileri kişisel belleğe aktarıp gizli tünele kaç.", next: "gizli_tunel" }
-                ]
-            },
-            pencere_atla: {
-                title: "BÖLÜM 3: GÖKYÜZÜ",
-                tension: "DESTANSI",
-                text: "Pencereyi kırıp dışarı atladın. Binanın yerden yüzlerce metre yukarındaki devasa bir kulede olduğunu fark ediyorsun. Çantadaki acil iniş ipini fırlatıyorsun.",
-                choices: [
-                    { text: "[A] İpten aşağı kayarak alt katın balkonuna güvenle in.", next: "balkon_in" }
-                ]
-            },
-            sifre_coz: {
-                title: "BÖLÜM 3: SON ŞİFRE",
-                tension: "ÖLÜMCÜL",
-                text: "Zehirli gaza rağmen son şifreyi tuşlamayı başardın. Omidron'un ana sunucusu kilitlendi ve tesis acil kilitlenme moduna geçti.",
-                choices: [
-                    { text: "[A] Güvenli sığınak kapısından dışarı çık.", next: "mutlak_zafer" }
-                ]
-            },
-            maske_bul: {
-                title: "BÖLÜM 3: OKSİJEN",
-                tension: "ORTA",
-                text: "Maskeyi bulup taktın. Hayatta kalmayı başardın ve tesisin arka çıkışına ulaştın.",
-                choices: [
-                    { text: "[A] Şehre kaçan son trene yetiş.", next: "mutlak_zafer" }
-                ]
-            },
-            asansor_shaft: {
-                title: "FİNAL: ASANSÖR ŞAFTI",
-                tension: "ZAFER",
-                text: "Karanlık şafttan tırmanarak yeryüzüne çıkmayı başardın. Tesis arkanda patlarken sen özgürlüğüne kavuştun. Oyunu kazandın!",
-                choices: [{ text: "🔄 Baştan Başla", next: "start" }]
-            },
-            guvenlik_kulesi: {
-                title: "FİNAL: KULE",
-                tension: "ZAFER",
-                text: "Kuleyi ele geçirip yapay zekayı küresel ağdan tamamen izole ettin. Dünyayı kurtardın! Oyunu kazandın!",
-                choices: [{ text: "🔄 Baştan Başla", next: "start" }]
-            },
-            cekirdek_al: {
-                title: "FİNAL: YENİ GÜÇ",
-                tension: "ZAFER",
-                text: "Çekirdeği yanına alıp tesisten ayrıldın. Artık bu yapay zekanın sırrı senin ellerinde. Oyunu kazandın!",
-                choices: [{ text: "🔄 Baştan Başla", next: "start" }]
-            },
-            gizli_tunel: {
-                title: "FİNAL: YERALTI AĞI",
-                tension: "ZAFER",
-                text: "Verilerle birlikte yeraltı trenine binerek şehre ulaştın. Efsanevi bir kaçış hikayesi yazdın!",
-                choices: [{ text: "🔄 Baştan Başla", next: "start" }]
-            },
-            balkon_in: {
-                title: "FİNAL: GÖKYÜZÜNDEN KAÇIŞ",
-                tension: "ZAFER",
-                text: "Balkona güvenle inip alt katın tahliye kapısından dışarı süzüldün. Görev tamamlandı!",
-                choices: [{ text: "🔄 Baştan Başla", next: "start" }]
-            },
-            mutlak_zafer: {
-                title: "FİNAL: KAHRAMAN",
-                tension: "ZAFER",
-                text: "Tüm engelleri zeka ve reflekslerinle aştın. Sistem çöktü, sen kazandın!",
-                choices: [{ text: "🔄 Baştan Başla", next: "start" }]
-            }
-        };
-
-        function renderScene(sceneKey) {
-            const scene = gameData[sceneKey];
-            if (scene.action) scene.action();
-
-            document.getElementById("chapterTitle").innerText = scene.title;
-            document.getElementById("tensionMeter").innerText = "TANSİYON: " + scene.tension;
-            document.getElementById("storyText").innerText = scene.text;
-            
-            // Metni otomatik seslendir
-            speakText(scene.text);
-
-            let invText = inventory.length > 0 ? inventory.join(", ") : "Boş";
-            document.getElementById("inventoryBar").innerText = "ENVANTER: [ " + invText + " ]";
-
-            const choicesArea = document.getElementById("choicesArea");
-            choicesArea.innerHTML = "";
-
-            scene.choices.forEach(choice => {
-                const btn = document.createElement("button");
-                btn.className = "choice-btn";
-                btn.innerText = choice.text;
-                btn.onclick = () => renderScene(choice.next);
-                choicesArea.appendChild(btn);
-            });
-        }
-
-        renderScene("start");
-    </script>
+<div class="game-container">
+<div class="status-bar">
+<span id="chapterTitle">BÖLÜM 1</span>
+<span id="tensionMeter">ATMOSFER: AĞIR VE GİZEMLİ</span>
+</div>
+<div class="inventory-bar" id="inventoryBar">ÇANTAN: [ Boş ]</div>
+<div class="screen-area" id="storyText">
+Hikaye yükleniyor... Ses sistemi aktif ediliyor.
+</div>
+<div class="choices-area" id="choicesArea"></div>
+</div>
+<script>
+let inventory = [];
+function speakText(text) {
+if ('speechSynthesis' in window) {
+window.speechSynthesis.cancel();
+let utterance = new SpeechSynthesisUtterance(text);
+utterance.lang = 'tr-TR';
+utterance.rate = 0.92; // Daha yavaş, sakin ve etkileyici okuma hızı
+utterance.pitch = 0.85; // Daha tok, derin ve sinematik ses tonu
+window.speechSynthesis.speak(utterance);
+}
+}
+const gameData = {
+start: {
+title: "BÖLÜM 1: KÖKLER VE TOZ",
+tension: "BOĞUCU SESSİZLİK",
+text: "Ağustos güneşinin Ege ovası üzerindeki kavurucu ve merhametsiz ağırlığı, taş sokaklara adeta kurşun gibi dökülüyor. Yıllardır unuttuğunu sandığın bu kasabaya, deden Ruhan Tonguç’un ölüm haberini alır almaz, içinde tarif edilemez bir suçluluk ve merak duygusuyla döndün. Dedeni sadece yaz tatillerinden, yüzünde zamanın kazıdığı derin çizgilerle cam kenarında sessizce kitap okuyan, gözlerinin arkasında ise asla çözemediğin sırlar saklayan yaşlı bir adam olarak hatırlıyorsun. Kasabanın girişindeki eski kahvehanenin önünden geçerken, ahşap sandalyelerde oturan yaşlıların bakışları aniden üzerine dikildi. Ne bir selam veren var ne de başını çeviren; sanki yıllar önce bu evden ayrılan o küçük çocuk değilmişsin de, kasabaya huzur bozmaya gelen yabancı bir ruhmuşsun gibi derin ve sorgulayıcı bir sessizlik hakim oldu.",
+action: () => { inventory = []; },
+choices: [
+{ text: "Dedenin sana bıraktığı, zamanın sararttığı o eski taş eve doğru adımlarını hızlandır ve geçmişin tozlu koridorlarıyla yüzleş.", next: "tas_ev_giris" },
+{ text: "Kahvehanenin önüne yönelip, yüzünde her şeyi bilen ama hiçbir şey söylemeyen o ifadeden taviz vermeyen muhtarla yüzleş.", next: "muhtar_yuzlesme" }
+]
+},
+tas_ev_giris: {
+title: "BÖLÜM 2: DEDEMİN EVİ",
+tension: "İÇ GÜDÜSEL HUZURSUZLUK",
+text: "Eski taş evin ağır, kestane ağacından yapılmış kapısı, yılların verdiği nem ve gıcırtıyla aralandı. İçeride, dışarıdaki kavurucu sıcağın aksine, yıllanmış zeytinyağı, nemli toprak ve eski kağıtların harmanlandığı ağır, neredeyse nefes kesen bir koku karşıladı seni. Pencereler sıkıca kapalı olduğu için içeriye sızan tek ışık, panjurların arasından süzülen ince toz tanecikleriyle dans eden soluk bir çizgiydi. Salonun ortasındaki masanın üzerinde, dedenin el yazısıyla bırakılmış açık duran bir defter ve üzerinde pas lekesi olan ağır demir bir anahtar duruyor. Defterin sayfalarında, kasabanın haritası üzerinde işaretlenmiş anlaşılmaz matematiksel semboller ve latince notlar var. İçindeki bir ses, dedenin ölümünün arkasında sıradan bir yaşlılığın olmadığını fısıldıyor.",
+action: () => {
+if(!inventory.includes("Demir Anahtar")) inventory.push("Demir Anahtar");
+if(!inventory.includes("Şifreli Defter")) inventory.push("Şifreli Defter");
+},
+choices: [
+{ text: "Defterdeki o tuhaf sembollerin ne anlama geldiğini anlamak için sayfaları incele ve dedenin zihninin derinliklerine in.", next: "defter_incele" },
+{ text: "Ağır demir anahtarı alıp, evin yıllardır kilitli duran ve içerisinden hafif bir rüzgar sesi gelen tavan arası merdivenlerine yönel.", next: "tavan_arasi_kesif" }
+]
+},
+muhtar_yuzlesme: {
+title: "BÖLÜM 2: KAHVEHANEDEKİ GÖLGELER",
+tension: "GERİLİM TIRMANIYOR",
+text: "Adımlarını kahvehanenin tahta sehpalarına doğru yönelttin. Masada oturan kasabanın muhtarı İsmail Efendi, önündeki çay bardaklarıyla oynarken başını yavaşça kaldırdı. Gözlerinde ne bir şaşkınlık ne de bir hoş geldiniz pırıltısı vardı; aksine, yıllardır bu anı bekliyormuş gibi bir rahatsızlık sezdin. Sesini alçaltarak, 'Ruhan hoca, ölmeden hemen önce senin geleceğini biliyordu evlat,' dedi. 'Burası sıradan bir Ege kasabası değildir. Toprağın altında yatanlar, üstündekilerden daha çoktur. Dedenin sana bıraktığı o mirası arıyorsan, eski fabrikanın zeminindeki kilitli kapıyı açmadan önce iki kez düşün.' Muhtar sana üzerinde eski bir mühür olan ahşap bir jeton uzatıyor.",
+action: () => {
+if(!inventory.includes("Ahşap Mühürlü Jeton")) inventory.push("Ahşap Mühürlü Jeton");
+},
+choices: [
+{ text: "Muhtarın uyarısını kulak arkası edip, dedenin sırlarla dolu geçmişini aydınlatmak için doğrudan eski fabrikanın yolunu tut.", next: "fabrika_karanlik" },
+{ text: "Muhtara teşekkür edip şüpheyle oradan uzaklaş ve dedenin evine dönerek ipuçlarını birleştir.", next: "tas_ev_giris" }
+]
+},
+defter_incele: {
+title: "BÖLÜM 3: ZİHNİN HARİTASI",
+tension: "PSİKOLOJİK DÖNÜŞÜM",
+text: "Defterin sayfalarını çevirdikçe, dedenin ne kadar yalnız ve takıntılı bir hayat sürdüğünü fark ediyorsun. Sayfalarda sık sık Ege tıp fakültesindeki gençlik yıllarına ve Atatürk lisesi dönemindeki bilimsel deneylerine atıflar var. Deden, sıradan bir emekli öğretmen değil, kasabanın yeraltı su yolları ve tarihe karışmış gizli bir tıbbi formül üzerine kafa yoran bir dahiymiş. Sayfanın kenarına şöyle yazmış: 'Gerçeği arayan insan, kendi karanlığıyla yüzleşmeye cesaret etmelidir.' Bu cümle zihninde yankılanırken, evdeki tahta döşemelerin altından hafif bir tıkırtı sesi geliyor.",
+action: () => {
+if(!inventory.includes("Tıp Notları")) inventory.push("Tıp Notları");
+},
+choices: [
+{ text: "Zeminden gelen tıkırtının sebebini bulmak için halıyı kaldır ve tahtaları incele.", next: "zemin_alti" },
+{ text: "Zaman kaybetmeden demir anahtarla tavan arasına çık ve asıl büyük sırrı ara.", next: "tavan_arasi_kesif" }
+]
+},
+tavan_arasi_kesif: {
+title: "BÖLÜM 3: TAVAN ARASININ SIRRI",
+tension: "NEFES KESİCİ",
+text: "Demir anahtar kilide girdiğinde çıkardığı metalik ses, evdeki sessizliği bıçak gibi kesti. Tavan arasına çıktığında, burnuna ağır bir naftalin ve eski deri kokusu çarptı. Odanın tam ortasında, üzerinde mumlar ve dedenin gençlik fotoğraflarının bulunduğu büyük bir masa duruyor. Fotoğraflarda dedenin yanında, yüzü yırtılmış gizemli bir insan silüeti var. Masanın çekmecesini açtığında, kasabanın altındaki eski zeytinyağı fabrikasına inen gizli bir asansörün mekanik kumanda kolunu buluyorsun. Artık her şey birbiriyle bağlanıyor.",
+action: () => {
+if(!inventory.includes("Mekanik Kumanda Kolu")) inventory.push("Mekanik Kumanda Kolu");
+},
+choices: [
+{ text: "Kumanda kolunu yanına al ve kasabanın kalbindeki o eski, karanlık zeytinyağı fabrikasına doğru yürümeye başla.", next: "fabrika_karanlik" }
+]
+},
+zemin_alti: {
+title: "BÖLÜM 3: GİZLİ BÖLME",
+tension: "YALNIZLIK HİSSİ",
+text: "Taş evin salonundaki halıyı kenara çekip meşe tahtasını kaldırdığında, içeriye doğru inen dar ve karanlık merdivenlerle karşılaşıyorsun. Burası kimsenin bilmediği, dedenin laboratuvar olarak kullandığı gizli bir sığınak. Duvarlarda eski anatomi çizimleri, insan zihni üzerine yazılmış latince makaleler ve odanın ortasında duran cam kavanozlar içinde korunan eski bitki örnekleri var. Deden burada insan hafızasını koruyacak bir formül üzerinde çalışıyormuş. Bu keşif seni hem ürkütüyor hem de dedene karşı duyduğun bağı sonsuzlaştırıyor.",
+action: () => {
+if(!inventory.includes("Hafıza Formülü")) inventory.push("Hafıza Formülü");
+},
+choices: [
+{ text: "Sığınağın arkasındaki tünelden geçerek eski fabrikanın alt katına ulaş.", next: "fabrika_karanlik" }
+]
+},
+fabrika_karanlik: {
+title: "BÖLÜM 4: FABRİKANIN DERİNLİKLERİ",
+tension: "ZİRVE GERİLİM",
+text: "Eski zeytinyağı fabrikasının devasa demir kapısı, içeriden gelen esintiyle hafifçe aralandı. İçerisi zifiri karanlık ve katran kokuyor. Elindeki kumanda kolu ve mühürlü jetonla fabrikanın alt katına inen asansörün önüne geldin. Mekanizma paslı olsa da çalışmaya başladı. Asansör gıcırtılar eşliğinde yerin metrelerce altına inerken, içindeki o yalnızlık hissi doruğa ulaşıyor. Aşağıda seni bekleyen şeyin sadece eski bir aile mirası değil, insanlığın hafızasını değiştirecek büyük bir sır olduğunu biliyorsun. Kapı açılıyor...",
+action: () => {},
+choices: [
+{ text: "Karanlığın içine adım at ve dedenin bıraktığı o nihai mirasla yüzleşerek kaderini mühürle.", next: "mutlak_final" }
+]
+},
+mutlak_final: {
+title: "FİNAL: DEDEMİN MİRASI",
+tension: "HUZURLU AYDINLANMA",
+text: "Asansörün açıldığı devasa yeraltı salonunda, binlerce eski kitap, tıp arşivi ve kasabanın tüm geçmişini barındıran belgeler ışıklar altında parlıyor. Masanın üzerinde dedenin son bir mektubu duruyor: 'Sevgili torunum, gerçek miras ne para ne de mülktür; gerçeği arama cesaretidir. Sen bu yola girerek sadece benim değil, kendi ruhunun da kilidini açtın.' Kasabanın üzerindeki o ağır, kasvetli sis bir anda dağılıyor. Sen artık sadece Ruhan Tonguç’un torunu değil, bu kasabanın yeni koruyucususun. Oyunu kazandın ve karakterinle tamamen bütünleştin.",
+action: () => {},
+choices: [
+{ text: "🔄 Hikayeyi Baştan Yaşa", next: "start" }
+]
+}
+};
+function renderScene(sceneKey) {
+const scene = gameData[sceneKey];
+if (scene.action) scene.action();
+document.getElementById("chapterTitle").innerText = scene.title;
+document.getElementById("tensionMeter").innerText = "ATMOSFER: " + scene.tension;
+document.getElementById("storyText").innerText = scene.text;
+speakText(scene.text);
+let invText = inventory.length > 0 ? inventory.join(", ") : "Boş";
+document.getElementById("inventoryBar").innerText = "ÇANTAN: [ " + invText + " ]";
+const choicesArea = document.getElementById("choicesArea");
+choicesArea.innerHTML = "";
+scene.choices.forEach(choice => {
+const btn = document.createElement("button");
+btn.className = "choice-btn";
+btn.innerText = choice.text;
+btn.onclick = () => renderScene(choice.next);
+choicesArea.appendChild(btn);
+});
+}
+renderScene("start");
+</script>
 </body>
 </html>
